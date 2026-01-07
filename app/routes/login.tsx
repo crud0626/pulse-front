@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { css } from 'styled-system/css';
+import { GoogleLogin, GoogleOAuthProvider, type CredentialResponse } from '@react-oauth/google';
 import KakaoLogo from '~/assets/logo_kakao.svg?react';
 
 export default function LoginPage() {
@@ -12,6 +13,18 @@ export default function LoginPage() {
       redirectUri: `${window.location.origin}/api/auth/kakao/callback`,
       scope: 'profile_nickname',
     });
+  };
+
+  const handleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (credentialResponse.credential) {
+      window.alert('로그인 성공!');
+    } else {
+      window.alert('로그인 실패!');
+    }
+  };
+
+  const handleError = () => {
+    window.alert('로그인 실패!');
   };
 
   /** TODO :: FOR AUTH TEST */
@@ -47,6 +60,9 @@ export default function LoginPage() {
       <div
         className={css({
           paddingTop: '40px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
         })}
       >
         <button
@@ -63,11 +79,21 @@ export default function LoginPage() {
             fontFamily: `-apple-system, BlinkMacSystemFont, 
              "Segoe UI", Roboto, "Helvetica Neue", 
              Arial, sans-serif;`,
+            cursor: 'pointer',
           })}
         >
           <KakaoLogo />
           <p>Login with Kakao</p>
         </button>
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <GoogleLogin
+            onSuccess={handleSuccess}
+            onError={handleError}
+            logo_alignment='center'
+            text='signin_with'
+            shape='square'
+          />
+        </GoogleOAuthProvider>
       </div>
     </div>
   );
