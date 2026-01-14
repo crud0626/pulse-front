@@ -10,7 +10,6 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
-    "@react-oauth/google": "^0.13.4",
     "@react-router/fs-routes": "^7.9.4",
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
