@@ -12,6 +12,7 @@ import {
 import { initMSWClient, initMSWServer } from '~/mocks';
 import type { Route } from './+types/root';
 import stylesheet from './app.css?url';
+import { css } from 'styled-system/css';
 
 initMSWServer();
 
@@ -26,8 +27,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
-        {children}
+      <body
+        className={css({
+          width: '100dvw',
+          height: '100dvh',
+        })}
+      >
+        <div
+          className={css({
+            margin: 'auto',
+            maxWidth: '360px',
+            minHeight: '100%',
+            display: 'flex',
+            backgroundColor: '#E5E7EB',
+            overflowX: 'hidden',
+          })}
+        >
+          {children}
+        </div>
         <ScrollRestoration />
         <Scripts />
         <script

@@ -1,30 +1,30 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { css } from 'styled-system/css';
-import { GoogleLogin, GoogleOAuthProvider, type CredentialResponse } from '@react-oauth/google';
+
 import KakaoLogo from '~/assets/logo_kakao.svg?react';
+import GoogleLogo from '~/assets/logo_google.svg?react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  const handleGoogleLogin = () => {
+    const googleLoginUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+
+    googleLoginUrl.searchParams.set('client_id', import.meta.env.VITE_GOOGLE_CLIENT_ID);
+    googleLoginUrl.searchParams.set('redirect_uri', import.meta.env.VITE_GOOGLE_REDIRECT_URI);
+    googleLoginUrl.searchParams.set('response_type', 'code');
+    googleLoginUrl.searchParams.set('scope', 'profile email');
+
+    window.location.href = googleLoginUrl.toString();
+  };
 
   const handleKakaoLogin = () => {
     window.Kakao?.Auth.authorize({
       redirectUri: `${window.location.origin}/api/auth/kakao/callback`,
       scope: 'profile_nickname',
     });
-  };
-
-  const handleSuccess = async (credentialResponse: CredentialResponse) => {
-    if (credentialResponse.credential) {
-      window.alert('로그인 성공!');
-    } else {
-      window.alert('로그인 실패!');
-    }
-  };
-
-  const handleError = () => {
-    window.alert('로그인 실패!');
   };
 
   /** TODO :: FOR AUTH TEST */
@@ -40,9 +40,8 @@ export default function LoginPage() {
   return (
     <div
       className={css({
-        margin: 'auto',
-        height: '100dvh',
-        maxWidth: '384px',
+        width: '100%',
+        padding: '12px 16px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -79,21 +78,27 @@ export default function LoginPage() {
             fontFamily: `-apple-system, BlinkMacSystemFont, 
              "Segoe UI", Roboto, "Helvetica Neue", 
              Arial, sans-serif;`,
-            cursor: 'pointer',
           })}
         >
           <KakaoLogo />
           <p>Login with Kakao</p>
         </button>
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-          <GoogleLogin
-            onSuccess={handleSuccess}
-            onError={handleError}
-            logo_alignment='center'
-            text='signin_with'
-            shape='square'
-          />
-        </GoogleOAuthProvider>
+        <button
+          onClick={handleGoogleLogin}
+          className={css({
+            width: '100%',
+            height: '52px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '8px',
+            backgroundColor: 'white',
+            borderRadius: '12px',
+          })}
+        >
+          <GoogleLogo />
+          <p>Login with Google</p>
+        </button>
       </div>
     </div>
   );

@@ -20,12 +20,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url);
     const authCode = url.searchParams.get('code');
 
-    if (!authCode) throw Error('Kakao authentication code is missing.');
+    if (!authCode) throw Error('Google authentication code is missing.');
 
     const { data } = await axios.post<LoginResponse>(`${process.env.VITE_API_ENDPOINT}/auth/login`, {
-      providerType: 'KAKAO',
+      providerType: 'GOOGLE',
       authorizationCode: authCode,
-      redirectUri: process.env.KAKAO_REDIRECT_URI,
+      redirectUri: process.env.VITE_GOOGLE_REDIRECT_URI,
     });
 
     // FOR TEST
@@ -33,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return redirect(`${redirectUrl.pathname}${redirectUrl.search}`);
   } catch (error) {
-    console.error('== Kakao Auth Error');
+    console.error('== Google Auth Error');
     console.dir(error);
 
     // FOR TEST
