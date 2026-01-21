@@ -37,7 +37,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           className={css({
             margin: 'auto',
             maxWidth: '360px',
-            minHeight: '100%',
+            height: '100%',
             display: 'flex',
             backgroundColor: '#E5E7EB',
             overflowX: 'hidden',
