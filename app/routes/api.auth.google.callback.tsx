@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { redirect, type LoaderFunctionArgs } from 'react-router';
+import { createCookie, redirect, type LoaderFunctionArgs } from 'react-router';
 
 interface LoginResponse {
   accessToken: string;
@@ -12,6 +12,18 @@ interface LoginResponse {
     role: string;
   };
 }
+
+const accessToken = createCookie(import.meta.env.VITE_AT_ID, {
+  secure: import.meta.env.PROD,
+  sameSite: 'strict',
+  httpOnly: false,
+});
+
+const refreshToken = createCookie(import.meta.env.VITE_RT_ID, {
+  secure: import.meta.env.PROD,
+  sameSite: 'strict',
+  httpOnly: false,
+});
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const redirectUrl = new URL('/login', request.url);
@@ -28,10 +40,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       redirectUri: process.env.VITE_GOOGLE_REDIRECT_URI,
     });
 
-    // FOR TEST
-    redirectUrl.searchParams.set('name', data.user.nickname);
+    const headers = new Headers();
+    headers.append('Set-Cookie', await accessToken.serialize(data.accessToken));
+    headers.append('Set-Cookie', await refreshToken.serialize(data.refreshToken));
 
-    return redirect(`${redirectUrl.pathname}${redirectUrl.search}`);
+    return redirect(`${redirectUrl.pathname}${redirectUrl.search}`, {
+      headers,
+    });
   } catch (error) {
     console.error('== Google Auth Error');
     console.dir(error);
