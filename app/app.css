@@ -1,1 +1,54 @@
 @layer reset, base, tokens, recipes, utilities;
+
+.rdp-root {
+  .rdp-months {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    .rdp-month {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .rdp-month_caption {
+        color: #303030;
+        font-weight: 500;
+      }
+
+      .rdp-weekdays {
+        .rdp-weekday {
+          color: #23272b;
+          font-size: 14px;
+          font-weight: normal;
+        }
+      }
+
+      .rdp-weeks {
+        text-align: center;
+
+        .rdp-day {
+          &.rdp-selected {
+            background-color: #e7eaed;
+          }
+
+          .rdp-day_button {
+            color: #23272b;
+            font-size: 14px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+
+            &:disabled {
+              color: #e7eaed;
+              cursor: not-allowed;
+            }
+          }
+        }
+
+        .rdp-today > .rdp-day_button {
+          color: #00f5a0;
+        }
+      }
+    }
+  }
+}
