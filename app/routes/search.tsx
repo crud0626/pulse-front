@@ -303,6 +303,8 @@ export default function SearchPage() {
               _open: {
                 flexGrow: 1,
                 flexShrink: 1,
+                overflowY: 'auto',
+                scrollbarWidth: 'none',
               },
             })}
           >
