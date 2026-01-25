@@ -5,9 +5,10 @@ import { css } from 'styled-system/css';
 import KakaoLogo from '~/assets/logo_kakao.svg?react';
 import GoogleLogo from '~/assets/logo_google.svg?react';
 import { getCookie } from '~/utils/cookie';
-import { clientFetcher } from '~/lib/axios/client';
+import { useAuth } from '~/store/useAuth';
 
 export default function LoginPage() {
+  const { isLoggedIn, userInfo, fetchUserInfo } = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleLogin = () => {
@@ -28,11 +29,9 @@ export default function LoginPage() {
     });
   };
 
-  const handleLogin = async () => {
+  const getUserInfo = async () => {
     try {
-      const { data } = await clientFetcher.get<{ id: number; nickname: string }>('/user/me');
-
-      window.alert(`반갑습니다. ${data.nickname}님!`);
+      fetchUserInfo();
       navigate('/');
     } catch (error) {
       window.alert('사용자 정보를 가져오는 데 실패하였습니다.');
@@ -42,8 +41,8 @@ export default function LoginPage() {
   useEffect(() => {
     const accessToken = getCookie(import.meta.env.VITE_AT_ID);
 
-    if (accessToken) {
-      handleLogin();
+    if (!isLoggedIn && accessToken) {
+      getUserInfo();
     }
   }, []);
 
