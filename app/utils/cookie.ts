@@ -1,5 +1,5 @@
-export function getCookie(name: string, cookieString?: string): string | undefined {
-  const cookies = cookieString ?? document.cookie;
+export function getCookie(name: string): string | void {
+  const cookies = document.cookie;
   const value = cookies
     .split('; ')
     .find((row) => row.startsWith(`${name}=`))

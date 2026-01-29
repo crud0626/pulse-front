@@ -28,15 +28,22 @@ clientFetcher.interceptors.response.use(
         originalRequest._retry = true;
 
         try {
-          const refreshToken = getCookie('refreshToken');
-          const { data } = await clientFetcher.post<{
+          const refreshToken = getCookie(import.meta.env.VITE_RT_ID);
+
+          if (!refreshToken) throw Error();
+
+          const { data } = await axios.post<{
             accessToken: string;
             refreshToken: string;
             expiresIn: number;
-          }>('/auth/refresh', { refreshToken });
+          }>(`${import.meta.env.VITE_API_ENDPOINT}/auth/refresh`, {
+            refreshToken: JSON.parse(atob(decodeURIComponent(refreshToken))),
+          });
 
-          setCookie('accessToken', data.accessToken);
-          setCookie('refreshToken', data.refreshToken);
+          setCookie(import.meta.env.VITE_AT_ID, encodeURIComponent(btoa(JSON.stringify(data.accessToken))));
+          setCookie(import.meta.env.VITE_RT_ID, encodeURIComponent(btoa(JSON.stringify(data.refreshToken))));
+
+          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
 
           return clientFetcher(originalRequest);
         } catch {

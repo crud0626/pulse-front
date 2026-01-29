@@ -31,7 +31,7 @@ export default function LoginPage() {
 
   const getUserInfo = async () => {
     try {
-      fetchUserInfo();
+      await fetchUserInfo();
       navigate('/');
     } catch (error) {
       window.alert('사용자 정보를 가져오는 데 실패하였습니다.');
