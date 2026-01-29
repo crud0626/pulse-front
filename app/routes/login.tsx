@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate } from 'react-router';
 import { css } from 'styled-system/css';
 
 import KakaoLogo from '~/assets/logo_kakao.svg?react';
 import GoogleLogo from '~/assets/logo_google.svg?react';
+import { getCookie } from '~/utils/cookie';
+import { useAuth } from '~/store/useAuth';
 
 export default function LoginPage() {
+  const { isLoggedIn, userInfo, fetchUserInfo } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   const handleGoogleLogin = () => {
     const googleLoginUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
@@ -27,13 +29,20 @@ export default function LoginPage() {
     });
   };
 
-  /** TODO :: FOR AUTH TEST */
-  useEffect(() => {
-    const userName = searchParams.get('name');
-
-    if (userName) {
-      window.alert(`반갑습니다. ${userName}님!`);
+  const getUserInfo = async () => {
+    try {
+      await fetchUserInfo();
       navigate('/');
+    } catch (error) {
+      window.alert('사용자 정보를 가져오는 데 실패하였습니다.');
+    }
+  };
+
+  useEffect(() => {
+    const accessToken = getCookie(import.meta.env.VITE_AT_ID);
+
+    if (!isLoggedIn && accessToken) {
+      getUserInfo();
     }
   }, []);
 
