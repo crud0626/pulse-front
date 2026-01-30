@@ -7,6 +7,8 @@ import type { Route } from './+types/_index';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
+import SubwayIcon from '~/assets/subway.svg?react';
+
 export function meta({}: Route.MetaArgs) {
   return [{ title: 'PULSE' }, { name: 'description', content: 'Welcome to React Router!' }];
 }
@@ -64,6 +66,15 @@ export default function HomePage() {
       order: 2,
     },
   ]);
+  const [routes] = useState([
+    {
+      lineName: '4호선',
+      lineColor: '#00A5DE',
+      stationName: '삼각지',
+      time: 35,
+    },
+    { lineName: '3호선', lineColor: '#EF7C1C', stationName: '충무로', time: 10 },
+  ]);
 
   return (
     <main
@@ -84,7 +95,15 @@ export default function HomePage() {
         })}
       >
         <Link to='/'>
-          <h1>PULSE</h1>
+          <h1
+            className={css({
+              fontFamily: 'PressStart2P',
+              fontSize: '18px',
+              fontWeight: 'normal',
+            })}
+          >
+            PULSE
+          </h1>
         </Link>
         <div
           className={css({
@@ -93,7 +112,7 @@ export default function HomePage() {
             gap: '12px',
           })}
         >
-          <button>
+          <Link to='/bookmarks'>
             <img
               src='/icons/calendar-star.png'
               alt=''
@@ -102,8 +121,8 @@ export default function HomePage() {
                 height: '24px',
               })}
             />
-          </button>
-          <button>
+          </Link>
+          <Link to='/mypage'>
             <img
               src='/icons/hamburger.png'
               alt=''
@@ -112,7 +131,7 @@ export default function HomePage() {
                 height: '24px',
               })}
             />
-          </button>
+          </Link>
         </div>
       </header>
       <div
@@ -203,7 +222,7 @@ export default function HomePage() {
               전체삭제
             </button>
           </div>
-          <Swiper spaceBetween={12} slidesPerView={1.3} className={css({ width: '100%' })}>
+          <Swiper spaceBetween={16} slidesPerView={1.3} className={css({ width: '100%' })}>
             {searchHistories.map((history) => (
               <SwiperSlide className={css({ backgroundColor: '#F5F7F9', borderRadius: '12px', padding: '12px' })}>
                 <div
@@ -217,43 +236,76 @@ export default function HomePage() {
                       flex: '1',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '12px',
+                      gap: '8px',
                       overflow: 'hidden',
                     })}
                   >
-                    <div
+                    <p
                       className={css({
                         position: 'relative',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
+                        fontSize: '14px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        paddingLeft: '16px',
+
+                        _before: {
+                          display: 'block',
+                          position: 'absolute',
+                          content: '""',
+                          width: '8px',
+                          height: '8px',
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          marginY: 'auto',
+                          rounded: 'full',
+                          // TODO :: 변경 처리
+                          backgroundColor: '#000',
+                        },
                       })}
                     >
-                      <img src='/icons/route-start.png' alt='' className={css({ width: '16px', height: '16px' })} />
-                      <p
-                        className={css({
-                          fontSize: '14px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        })}
-                      >
-                        {history.start}
-                      </p>
-                    </div>
-                    <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
-                      <img src='/icons/route-end.png' alt='' className={css({ width: '16px', height: '16px' })} />
-                      <p
-                        className={css({
-                          fontSize: '14px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        })}
-                      >
-                        {history.end}
-                      </p>
-                    </div>
+                      {history.start}
+                    </p>
+                    <p
+                      className={css({
+                        position: 'relative',
+                        fontSize: '14px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        paddingLeft: '16px',
+
+                        _before: {
+                          display: 'block',
+                          position: 'absolute',
+                          content: '""',
+                          width: '8px',
+                          height: '8px',
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          marginY: 'auto',
+                          rounded: 'full',
+                          // TODO :: 변경 처리
+                          backgroundColor: '#000',
+                        },
+                      })}
+                    >
+                      {history.end}
+                    </p>
+                    <p
+                      className={css({
+                        position: 'relative',
+                        fontSize: '14px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        paddingLeft: '16px',
+                      })}
+                    >
+                      {`${history.startTime}~${history.endTime} 중 출발`}
+                    </p>
                   </div>
                   <button
                     className={css({
@@ -291,139 +343,124 @@ export default function HomePage() {
                       gap: '16px',
                     })}
                   >
-                    <div className={css({ display: 'flex', justifyContent: 'space-between' })}>
-                      <div
-                        className={css({
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          gap: '8px',
-                        })}
-                      >
-                        <img src='/icons/check-badge.png' alt='' className={css({ width: '24px', height: '24px' })} />
-                        <h2
-                          className={css({
-                            fontSize: '20px',
-                            fontWeight: 'semibold',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          })}
-                        >
-                          {item.name}
-                        </h2>
-                      </div>
-                      <button className={css({ fontSize: '14px', color: '#7E8490' })}>상세보기</button>
-                    </div>
-                    <div className={css({ display: 'flex', flexDirection: 'column', gap: '10px' })}>
-                      <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
-                        <img src='/icons/route-start.png' alt='' className={css({ width: '16px', height: '16px' })} />
-                        <p
-                          className={css({
-                            fontSize: '14px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          })}
-                        >
-                          {item.start}
-                        </p>
-                      </div>
-                      <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
-                        <img src='/icons/route-end.png' alt='' className={css({ width: '16px', height: '16px' })} />
-                        <p
-                          className={css({
-                            fontSize: '14px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          })}
-                        >
-                          {item.end}
-                        </p>
-                      </div>
-                      <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
-                        <img src='/icons/clock-black.png' alt='' className={css({ width: '16px', height: '16px' })} />
-                        <p
-                          className={css({
-                            fontSize: '14px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          })}
-                        >
-                          {item.minTime} ~ {item.maxTime} 중 출발
-                        </p>
-                      </div>
-                    </div>
-                    <hr className={css({ border: '1px dashed #D3D7DD' })} />
-                    {/* 결과 영역 */}
                     <div
                       className={css({
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '12px',
+                        gap: '8px',
                       })}
                     >
-                      <div
-                        className={css({
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        })}
-                      >
-                        <div
-                          className={css({
-                            display: 'flex',
-                            alignItems: 'center',
-                          })}
-                        >
-                          <img
-                            src='/icons/congestion-best.png'
-                            alt=''
-                            className={css({ width: '24px', height: '24px' })}
-                          />
-                          <p className={css({ fontSize: '18px', fontWeight: 'bold' })}>여유로워요</p>
-                        </div>
-                        <div
-                          className={css({
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            flexShrink: 1,
-                            padding: '2px 6px',
-                            backgroundColor: '#23272B',
-                            borderRadius: '4px',
-                            color: 'white',
-                          })}
-                        >
-                          <p className={css({ fontSize: '14px' })}>12:40 출발</p>
-                          <p>·</p>
-                          <p className={css({ fontSize: '12px' })}>30분 소요</p>
-                        </div>
-                      </div>
-                      <div>
-                        <div
-                          className={css({
-                            backgroundColor: '#2B54A3',
-                            height: '6px',
-                            borderRadius: '9999px',
-                          })}
-                        ></div>
+                      <div className={css({ display: 'flex', justifyContent: 'space-between' })}>
                         <div
                           className={css({
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            color: '#9DA3AD',
+                            gap: '8px',
                           })}
                         >
-                          <p>12:40</p>
-                          <p>13:00</p>
+                          <img src='/icons/check-badge.png' alt='' className={css({ width: '24px', height: '24px' })} />
+                          <h2
+                            className={css({
+                              fontSize: '20px',
+                              fontWeight: 'semibold',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            })}
+                          >
+                            {item.name}
+                          </h2>
                         </div>
+                        <button className={css({ fontSize: '14px', color: '#7E8490' })}>상세보기</button>
                       </div>
+                      <p
+                        className={css({
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        })}
+                      >
+                        {item.minTime} ~ {item.maxTime} 중 출발
+                      </p>
+                    </div>
+                    {/* TODO :: Route 경로 */}
+                    <div>
+                      {/* RouteTimelineBar */}
+                      <div
+                        className={css({
+                          display: 'flex',
+                          gap: '16px',
+                          height: '16px',
+                          backgroundColor: '#D3D7DD',
+                          borderRadius: 'full',
+                        })}
+                      >
+                        {routes.map((route, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              backgroundColor: route.lineColor,
+                              flexGrow: route.time,
+                            }}
+                            className={css({
+                              position: 'relative',
+                              textAlign: 'center',
+                              borderRadius: 'full',
+                            })}
+                          >
+                            <SubwayIcon
+                              className={css({ position: 'absolute', left: 0, top: 0, width: '16px', height: '16px' })}
+                            />
+                            <p className={css({ color: 'white', fontSize: '12px' })}>{route.time}분</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Route 경로 (Simple) */}
+                    <div
+                      className={css({
+                        display: 'flex',
+                        flexDirection: 'column',
+                      })}
+                    >
+                      {routes.map((route, idx) => (
+                        <div key={idx}>
+                          <div
+                            className={css({
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                            })}
+                          >
+                            <img
+                              src='/icons/subway-badge.png'
+                              alt=''
+                              className={css({
+                                width: '14px',
+                                height: '14px',
+                              })}
+                            />
+                            <p className={css({ flex: '1', fontSize: '14px' })}>
+                              <span
+                                style={{ color: route.lineColor }}
+                                className={css({ fontWeight: 'bold', paddingRight: '4px' })}
+                              >
+                                {route.lineName}
+                              </span>{' '}
+                              {route.stationName} {idx === 0 ? '승차' : '환승'}
+                            </p>
+                          </div>
+                          <div
+                            className={css({
+                              marginLeft: '6px',
+                              borderLeft: '1px solid #BBC1C9',
+                              width: 0,
+                              height: '14px',
+                            })}
+                          />
+                        </div>
+                      ))}
                       <div
                         className={css({
                           display: 'flex',
@@ -431,17 +468,126 @@ export default function HomePage() {
                           gap: '8px',
                         })}
                       >
+                        <div className={css({ width: '14px', height: '14px', padding: '4px' })}>
+                          <span
+                            style={{ backgroundColor: '#000' }}
+                            className={css({ display: 'block', width: 'full', height: 'full', rounded: 'full' })}
+                          />
+                        </div>
+                        <p className={css({ fontSize: '14px' })}>금호역 하차</p>
+                      </div>
+                    </div>
+                    <hr className={css({ border: '1px dashed #D3D7DD' })} />
+                    {/* TODO :: TOP 3 영역 */}
+                    <div
+                      className={css({
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                      })}
+                    >
+                      <div
+                        className={css({
+                          padding: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          // BEST ROUTE STYLE
+                          rounded: '8px',
+                          border: '1px solid transparent',
+                          backgroundImage:
+                            'linear-gradient(#E9F5F1, #E9F5F1), linear-gradient(90deg, #00F5A0 0%, #00D9F5 100%)',
+                          backgroundOrigin: 'border-box',
+                          backgroundClip: 'padding-box, border-box',
+                        })}
+                      >
                         <img
-                          src='/icons/subway-badge.png'
+                          src='/icons/congestion-best.png'
                           alt=''
-                          className={css({
-                            width: '14px',
-                            height: '14px',
-                          })}
+                          className={css({ width: '24px', height: '24px', flexShrink: 0 })}
                         />
-                        <p className={css({ flex: '1', fontSize: '14px' })}>
-                          <span className={css({ fontWeight: 'bold', color: '#2B54A3' })}>1호선</span> 회기역 승차
-                        </p>
+                        <p className={css({ fontWeight: 'bold', flexGrow: 1 })}>여유로워요</p>
+                        <div
+                          className={css({
+                            flexShrink: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '14px',
+                          })}
+                        >
+                          <p>
+                            출발 <span className={css({ fontWeight: 'semibold' })}>12:40</span>
+                          </p>
+                          <p>-</p>
+                          <p>
+                            도착 <span className={css({ fontWeight: 'semibold' })}>13:10</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        className={css({
+                          padding: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                        })}
+                      >
+                        <img
+                          src='/icons/congestion-normal.png'
+                          alt=''
+                          className={css({ width: '24px', height: '24px', flexShrink: 0 })}
+                        />
+                        <p className={css({ flexGrow: 1 })}>보통이에요</p>
+                        <div
+                          className={css({
+                            flexShrink: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '14px',
+                          })}
+                        >
+                          <p>
+                            출발 <span className={css({ fontWeight: 'semibold' })}>12:40</span>
+                          </p>
+                          <p>-</p>
+                          <p>
+                            도착 <span className={css({ fontWeight: 'semibold' })}>13:10</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        className={css({
+                          padding: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                        })}
+                      >
+                        <img
+                          src='/icons/congestion-bad.png'
+                          alt=''
+                          className={css({ width: '24px', height: '24px', flexShrink: 0 })}
+                        />
+                        <p className={css({ flexGrow: 1 })}>혼잡해요</p>
+                        <div
+                          className={css({
+                            flexShrink: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '14px',
+                          })}
+                        >
+                          <p>
+                            출발 <span className={css({ fontWeight: 'semibold' })}>12:40</span>
+                          </p>
+                          <p>-</p>
+                          <p>
+                            도착 <span className={css({ fontWeight: 'semibold' })}>13:10</span>
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

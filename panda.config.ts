@@ -17,6 +17,14 @@ export default defineConfig({
     },
   },
   globalFontface: {
+    PressStart2P: [
+      {
+        src: 'url(/fonts/PressStart2P-Regular.woff2) format("woff2")',
+        fontWeight: 400,
+        fontStyle: 'normal',
+        fontDisplay: 'swap',
+      },
+    ],
     Pretendard: [
       {
         src: 'url(/fonts/Pretendard-Thin.woff2) format("woff2")',
