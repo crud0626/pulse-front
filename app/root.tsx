@@ -13,6 +13,7 @@ import { initMSWClient, initMSWServer } from '~/mocks';
 import type { Route } from './+types/root';
 import stylesheet from './app.css?url';
 import { css } from 'styled-system/css';
+import { useSearchHistory } from './store/useSearchHistory';
 
 initMSWServer();
 
@@ -58,6 +59,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { initialize: initializeSearchHistory } = useSearchHistory();
+
   useEffect(() => {
     function initApp() {
       return initMSWClient();
@@ -70,6 +73,10 @@ export default function App() {
     if (window.Kakao) {
       window.Kakao.init(import.meta.env.VITE_KAKAO_JS_KEY);
     }
+  }, []);
+
+  useEffect(() => {
+    initializeSearchHistory();
   }, []);
 
   return <Outlet />;

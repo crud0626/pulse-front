@@ -3,41 +3,22 @@ import { Link } from 'react-router';
 import { Swiper as SwiperType } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { css } from 'styled-system/css';
-import type { Route } from './+types/_index';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
+import type { Route } from './+types/_index';
 import SubwayIcon from '~/assets/subway.svg?react';
+import { useSearchHistory } from '~/store/useSearchHistory';
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: 'PULSE' }, { name: 'description', content: 'Welcome to React Router!' }];
+  return [{ title: 'PULSE' }, { name: 'description', content: 'Welcome to PULSE!' }];
 }
 
 export default function HomePage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
+  const { searchHistories } = useSearchHistory();
 
-  /** MOCK DATA */
-  const [searchHistories] = useState([
-    {
-      startId: 131,
-      start: '종각역',
-      endId: 349,
-      end: '수서역',
-      date: '2026-01-01',
-      startTime: '12:00',
-      endTime: '13:10',
-    },
-    {
-      startId: 533,
-      start: '광화문역',
-      endId: 133,
-      end: '서울역',
-      date: '2026-01-05',
-      startTime: '20:00',
-      endTime: '21:00',
-    },
-  ]);
   const [favorites] = useState([
     {
       id: 1,
@@ -175,23 +156,17 @@ export default function HomePage() {
           </div>
         </Link>
         {/* Search History Section */}
-        <section
-          className={css({
-            width: '100%',
-            padding: '16px',
-            backgroundColor: 'white',
-            borderRadius: '20px',
-            boxShadow: '0 4px 16px rgb(186 223 255 / 0.1)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-          })}
-        >
-          <div
+        {searchHistories.length > 0 && (
+          <section
             className={css({
+              width: '100%',
+              padding: '16px',
+              backgroundColor: 'white',
+              borderRadius: '20px',
+              boxShadow: '0 4px 16px rgb(186 223 255 / 0.1)',
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              flexDirection: 'column',
+              gap: '16px',
             })}
           >
             <div
@@ -199,126 +174,134 @@ export default function HomePage() {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                gap: '8px',
               })}
             >
-              <img src='/icons/clock-badge.png' alt='' className={css({ width: '24px', height: '24px' })} />
-              <h2
+              <div
                 className={css({
-                  fontWeight: 'semibold',
-                  fontSize: '20px',
-                  color: 'black',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '8px',
                 })}
               >
-                최근내역
-              </h2>
-            </div>
-            <button
-              className={css({
-                color: '#7E8490',
-                fontSize: '14px',
-              })}
-            >
-              전체삭제
-            </button>
-          </div>
-          <Swiper spaceBetween={16} slidesPerView={1.3} className={css({ width: '100%' })}>
-            {searchHistories.map((history) => (
-              <SwiperSlide className={css({ backgroundColor: '#F5F7F9', borderRadius: '12px', padding: '12px' })}>
-                <div
+                <img src='/icons/clock-badge.png' alt='' className={css({ width: '24px', height: '24px' })} />
+                <h2
                   className={css({
-                    display: 'flex',
-                    alignItems: 'start',
+                    fontWeight: 'semibold',
+                    fontSize: '20px',
+                    color: 'black',
                   })}
                 >
+                  최근내역
+                </h2>
+              </div>
+              <button
+                className={css({
+                  color: '#7E8490',
+                  fontSize: '14px',
+                })}
+              >
+                전체삭제
+              </button>
+            </div>
+            <Swiper spaceBetween={16} slidesPerView={1.3} className={css({ width: '100%' })}>
+              {searchHistories.map((history) => (
+                <SwiperSlide className={css({ backgroundColor: '#F5F7F9', borderRadius: '12px', padding: '12px' })}>
                   <div
                     className={css({
-                      flex: '1',
                       display: 'flex',
-                      flexDirection: 'column',
-                      gap: '8px',
-                      overflow: 'hidden',
+                      alignItems: 'start',
                     })}
                   >
-                    <p
+                    <div
                       className={css({
-                        position: 'relative',
-                        fontSize: '14px',
+                        flex: '1',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        paddingLeft: '16px',
+                      })}
+                    >
+                      <p
+                        className={css({
+                          position: 'relative',
+                          fontSize: '14px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          paddingLeft: '16px',
 
-                        _before: {
-                          display: 'block',
-                          position: 'absolute',
-                          content: '""',
-                          width: '8px',
-                          height: '8px',
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          marginY: 'auto',
-                          rounded: 'full',
-                          // TODO :: 변경 처리
-                          backgroundColor: '#000',
-                        },
-                      })}
-                    >
-                      {history.start}
-                    </p>
-                    <p
-                      className={css({
-                        position: 'relative',
-                        fontSize: '14px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        paddingLeft: '16px',
+                          _before: {
+                            display: 'block',
+                            position: 'absolute',
+                            content: '""',
+                            width: '8px',
+                            height: '8px',
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            marginY: 'auto',
+                            rounded: 'full',
+                            // TODO :: 변경 처리
+                            backgroundColor: '#000',
+                          },
+                        })}
+                      >
+                        {history.startName}
+                      </p>
+                      <p
+                        className={css({
+                          position: 'relative',
+                          fontSize: '14px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          paddingLeft: '16px',
 
-                        _before: {
-                          display: 'block',
-                          position: 'absolute',
-                          content: '""',
-                          width: '8px',
-                          height: '8px',
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          marginY: 'auto',
-                          rounded: 'full',
-                          // TODO :: 변경 처리
-                          backgroundColor: '#000',
-                        },
-                      })}
-                    >
-                      {history.end}
-                    </p>
-                    <p
+                          _before: {
+                            display: 'block',
+                            position: 'absolute',
+                            content: '""',
+                            width: '8px',
+                            height: '8px',
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            marginY: 'auto',
+                            rounded: 'full',
+                            // TODO :: 변경 처리
+                            backgroundColor: '#000',
+                          },
+                        })}
+                      >
+                        {history.endName}
+                      </p>
+                      <p
+                        className={css({
+                          position: 'relative',
+                          fontSize: '14px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          paddingLeft: '16px',
+                        })}
+                      >
+                        {`${history.startTime}~${history.endTime} 중 출발`}
+                      </p>
+                    </div>
+                    <button
                       className={css({
-                        position: 'relative',
-                        fontSize: '14px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        paddingLeft: '16px',
+                        flex: '0 1 24px',
                       })}
                     >
-                      {`${history.startTime}~${history.endTime} 중 출발`}
-                    </p>
+                      <img src='/icons/empty-star.png' alt='' className={css({ width: '24px', height: '24px' })} />
+                    </button>
                   </div>
-                  <button
-                    className={css({
-                      flex: '0 1 24px',
-                    })}
-                  >
-                    <img src='/icons/empty-star.png' alt='' className={css({ width: '24px', height: '24px' })} />
-                  </button>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </section>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </section>
+        )}
         {/* 즐겨찾기 목록 */}
         <section className={css({ position: 'relative', paddingBottom: '23px' })}>
           <div
