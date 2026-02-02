@@ -38,6 +38,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       >
         <div
           className={css({
+            position: 'relative',
             margin: 'auto',
             maxWidth: '360px',
             height: '100%',
