@@ -8,6 +8,8 @@ import {
   ScrollRestoration,
   type LinksFunction,
 } from 'react-router';
+import { ToastContainer } from 'react-toastify/unstyled';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { initMSWClient, initMSWServer } from '~/mocks';
 import type { Route } from './+types/root';
@@ -79,7 +81,25 @@ export default function App() {
     initializeSearchHistory();
   }, []);
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <ToastContainer
+        autoClose={2000}
+        position='bottom-center'
+        hideProgressBar
+        closeButton={false}
+        toastStyle={{
+          backgroundColor: 'rgba(35, 39, 43, 0.8)',
+          color: 'white',
+          fontSize: '14px',
+          borderRadius: '12px',
+          padding: '12px 16px',
+          minHeight: 'auto',
+        }}
+      />
+    </>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
