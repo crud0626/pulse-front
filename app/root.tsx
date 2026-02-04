@@ -16,6 +16,7 @@ import type { Route } from './+types/root';
 import stylesheet from './app.css?url';
 import { css } from 'styled-system/css';
 import { useSearchHistory } from './store/useSearchHistory';
+import GlobalModal from './components/GlobalModal';
 
 initMSWServer();
 
@@ -85,6 +86,7 @@ export default function App() {
   return (
     <>
       <Outlet />
+      <GlobalModal />
       <ToastContainer
         autoClose={2000}
         position='bottom-center'
