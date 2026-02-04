@@ -1,12 +1,25 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DayPicker } from 'react-day-picker';
 import { ko } from 'react-day-picker/locale';
 import { css } from 'styled-system/css';
+import { useNavigate } from 'react-router';
 
-import VerticalChange from '~/assets/vertical-change.svg?react';
+import VerticalChangeIcon from '~/assets/vertical-change.svg?react';
 import TrainIcon from '~/assets/train.svg?react';
 
-const MOCK_KEYWORD_RESULT = {
+interface KeywordSearchContent {
+  stationName: string;
+  stationID: string;
+  x: number;
+  y: number;
+  laneName: string;
+  lineColor: string;
+}
+
+const MOCK_KEYWORD_RESULT: {
+  totalCount: number;
+  stations: KeywordSearchContent[];
+} = {
   'totalCount': 9,
   'stations': [
     {
@@ -15,6 +28,7 @@ const MOCK_KEYWORD_RESULT = {
       'x': 126.933892,
       'y': 37.472059,
       'laneName': '수도권 신림선',
+      'lineColor': '#A1C639',
     },
     {
       'stationName': '서울대입구',
@@ -22,6 +36,7 @@ const MOCK_KEYWORD_RESULT = {
       'x': 126.952729,
       'y': 37.481207,
       'laneName': '수도권 2호선',
+      'lineColor': '#3CB44B',
     },
     {
       'stationName': '서울숲',
@@ -29,6 +44,7 @@ const MOCK_KEYWORD_RESULT = {
       'x': 127.04469,
       'y': 37.543654,
       'laneName': '수도권 수인.분당선',
+      'lineColor': '#F5A623',
     },
     {
       'stationName': '서울역',
@@ -36,6 +52,7 @@ const MOCK_KEYWORD_RESULT = {
       'x': 126.972317,
       'y': 37.555946,
       'laneName': '수도권 1호선',
+      'lineColor': '#0052A4',
     },
     {
       'stationName': '서울역',
@@ -43,6 +60,7 @@ const MOCK_KEYWORD_RESULT = {
       'x': 126.972713,
       'y': 37.553514,
       'laneName': '수도권 4호선',
+      'lineColor': '#00A4E3',
     },
     {
       'stationName': '서울역',
@@ -50,6 +68,7 @@ const MOCK_KEYWORD_RESULT = {
       'x': 126.971333,
       'y': 37.556407,
       'laneName': '경의중앙선',
+      'lineColor': '#73C7A6',
     },
     {
       'stationName': '서울역',
@@ -57,6 +76,7 @@ const MOCK_KEYWORD_RESULT = {
       'x': 126.969775,
       'y': 37.553744,
       'laneName': '수도권 공항철도',
+      'lineColor': '#5B9BD5',
     },
     {
       'stationName': '서울역',
@@ -64,6 +84,7 @@ const MOCK_KEYWORD_RESULT = {
       'x': 126.972616,
       'y': 37.555474,
       'laneName': '수도권 GTX-A',
+      'lineColor': '#9B59B6',
     },
     {
       'stationName': '서울지방병무청',
@@ -71,12 +92,44 @@ const MOCK_KEYWORD_RESULT = {
       'x': 126.922594,
       'y': 37.505772,
       'laneName': '수도권 신림선',
+      'lineColor': '#D35400',
     },
   ],
 };
 
 export default function SearchPage() {
-  const [selected, setSelected] = useState<Date>();
+  const navigate = useNavigate();
+  const [selectedDate, setSelectedDate] = useState<Date>();
+
+  const [selectedStation, setSelectedStation] = useState<{
+    start: null | KeywordSearchContent;
+    end: null | KeywordSearchContent;
+  }>({
+    start: null,
+    end: null,
+  });
+
+  const [searchResult, setSearchResult] = useState<KeywordSearchContent[]>([]);
+  const [focusedInput, setFocusedInput] = useState<null | 'start' | 'end'>(null);
+  // TODO :: input 확정 컨텐츠에 대한 별도 컨트롤
+  const [inputValue, setInputValue] = useState({
+    start: '',
+    end: '',
+  });
+
+  useEffect(() => {
+    setSearchResult([]);
+  }, [focusedInput]);
+
+  useEffect(() => {
+    if (focusedInput === null || !inputValue[focusedInput]) {
+      setSearchResult([]);
+      return;
+    }
+
+    // TODO :: 검색 API 요청 연결
+    setSearchResult(MOCK_KEYWORD_RESULT.stations);
+  }, [inputValue, focusedInput]);
 
   return (
     <main
@@ -98,7 +151,13 @@ export default function SearchPage() {
           alignItems: 'center',
         })}
       >
-        <button>이전</button>
+        <button
+          onClick={() => {
+            navigate(-1);
+          }}
+        >
+          <img src='/icons/close.png' alt='' className={css({ width: '24px', height: '24px' })} />
+        </button>
       </header>
       <div
         className={css({
@@ -204,20 +263,80 @@ export default function SearchPage() {
                       },
                     })}
                   >
-                    <img
-                      src='/icons/route-start.png'
-                      alt=''
-                      className={css({
-                        width: '16px',
-                        height: '16px',
-                      })}
-                    />
+                    {selectedStation.start && (
+                      <span
+                        style={{
+                          backgroundColor: selectedStation.start.lineColor,
+                        }}
+                        className={css({
+                          flexShrink: 0,
+                          display: 'block',
+                          width: '10px',
+                          height: '10px',
+                          borderRadius: 'full',
+                        })}
+                      />
+                    )}
                     <input
                       type='text'
                       name='start'
                       placeholder='출발지 검색'
-                      className={css({ minWidth: 0, outline: 'none' })}
+                      value={inputValue.start}
+                      className={css({ flexGrow: 1, flexShrink: 1, minWidth: 0, outline: 'none' })}
+                      onFocus={() => setFocusedInput('start')}
+                      onBlur={() => {
+                        const { start } = selectedStation;
+
+                        if (start) {
+                          setInputValue((prev) => ({
+                            ...prev,
+                            start: start.stationName,
+                          }));
+                        }
+                      }}
+                      onChange={(event) => {
+                        const changedValue = event.currentTarget.value;
+
+                        if (!changedValue) {
+                          setSelectedStation((prev) => ({
+                            ...prev,
+                            start: null,
+                          }));
+                        }
+
+                        setInputValue((prev) => ({
+                          ...prev,
+                          start: changedValue,
+                        }));
+                      }}
                     />
+                    <button
+                      className={css({
+                        flexShrink: 0,
+                        visibility: focusedInput === 'start' ? 'visible' : 'hidden',
+                      })}
+                      onClick={() => {
+                        setSelectedStation((prev) => ({
+                          ...prev,
+                          start: null,
+                        }));
+                        setInputValue((prev) => ({
+                          ...prev,
+                          start: '',
+                        }));
+                      }}
+                    >
+                      <img
+                        src='/icons/close-circle.png'
+                        alt=''
+                        className={css({
+                          flexShrink: 0,
+                          width: '18px',
+                          height: '18px',
+                          objectFit: 'cover',
+                        })}
+                      />
+                    </button>
                   </div>
                   <div
                     className={css({
@@ -238,28 +357,98 @@ export default function SearchPage() {
                       },
                     })}
                   >
-                    <img
-                      src='/icons/route-end.png'
-                      alt=''
-                      className={css({
-                        width: '16px',
-                        height: '16px',
-                      })}
-                    />
+                    {selectedStation.end && (
+                      <span
+                        style={{
+                          backgroundColor: selectedStation.end.lineColor,
+                        }}
+                        className={css({
+                          display: 'block',
+                          width: '10px',
+                          height: '10px',
+                          borderRadius: 'full',
+                        })}
+                      />
+                    )}
                     <input
                       type='text'
                       name='end'
                       placeholder='도착지 검색'
-                      className={css({ minWidth: 0, outline: 'none' })}
+                      className={css({ flexGrow: 1, flexShrink: 1, minWidth: 0, outline: 'none' })}
+                      onFocus={() => setFocusedInput('end')}
+                      onBlur={() => {
+                        const { end } = selectedStation;
+
+                        if (end) {
+                          setInputValue((prev) => ({
+                            ...prev,
+                            end: end.stationName,
+                          }));
+                        }
+                      }}
+                      value={inputValue.end}
+                      onChange={(event) => {
+                        const changedValue = event.currentTarget.value;
+
+                        if (!changedValue) {
+                          setSelectedStation((prev) => ({
+                            ...prev,
+                            end: null,
+                          }));
+                        }
+
+                        setInputValue((prev) => ({
+                          ...prev,
+                          end: changedValue,
+                        }));
+                      }}
                     />
+                    <button
+                      className={css({
+                        visibility: focusedInput === 'end' ? 'visible' : 'hidden',
+                      })}
+                      onClick={() => {
+                        setSelectedStation((prev) => ({
+                          ...prev,
+                          end: null,
+                        }));
+
+                        setInputValue((prev) => ({
+                          ...prev,
+                          end: '',
+                        }));
+                      }}
+                    >
+                      <img
+                        src='/icons/close-circle.png'
+                        alt=''
+                        className={css({
+                          width: '18px',
+                          height: '18px',
+                        })}
+                      />
+                    </button>
                   </div>
                 </div>
-                <button>
-                  <VerticalChange color='#000' />
+                <button
+                  onClick={() => {
+                    if (!selectedStation.start && !selectedStation.end) return;
+
+                    setSelectedStation((prev) => ({
+                      start: prev.end,
+                      end: prev.start,
+                    }));
+                    setInputValue((prev) => ({
+                      start: prev.end,
+                      end: prev.start,
+                    }));
+                  }}
+                >
+                  <VerticalChangeIcon color='#000' />
                 </button>
               </div>
               <div>
-                {MOCK_KEYWORD_RESULT.stations.map(({ stationID, stationName, x, y, laneName }) => (
+                {searchResult.map(({ stationID, stationName, x, y, laneName, lineColor }) => (
                   <button
                     key={stationID}
                     className={css({
@@ -272,9 +461,37 @@ export default function SearchPage() {
                         backgroundColor: '#E7EAED',
                       },
                     })}
+                    onClick={() => {
+                      if (focusedInput === null) return;
+
+                      setInputValue((prev) => ({
+                        ...prev,
+                        [focusedInput]: stationName,
+                      }));
+
+                      setSelectedStation((prev) => ({
+                        ...prev,
+                        [focusedInput]: {
+                          stationID,
+                          stationName,
+                          x,
+                          y,
+                          laneName,
+                          lineColor,
+                        },
+                      }));
+                    }}
                   >
                     <TrainIcon className={css({ flexShrink: 0 })} />
-                    <div className={css({ flexGrow: 1, textAlign: 'left' })}>
+                    <div
+                      className={css({
+                        flexGrow: 1,
+                        textAlign: 'left',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      })}
+                    >
                       <p
                         className={css({
                           fontSize: '14px',
@@ -282,6 +499,19 @@ export default function SearchPage() {
                         })}
                       >
                         {stationName}
+                      </p>
+                      <p
+                        style={{ backgroundColor: lineColor }}
+                        className={css({
+                          paddingX: '4px',
+                          paddingY: '2px',
+                          borderRadius: 'full',
+                          color: 'white',
+                          fontSize: '10px',
+                          fontWeight: 'normal',
+                        })}
+                      >
+                        {laneName}
                       </p>
                     </div>
                   </button>
@@ -349,8 +579,8 @@ export default function SearchPage() {
                 numberOfMonths={3}
                 locale={ko}
                 mode='single'
-                selected={selected}
-                onSelect={setSelected}
+                selected={selectedDate}
+                onSelect={setSelectedDate}
               />
             </div>
           </details>
