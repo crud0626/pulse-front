@@ -8,12 +8,15 @@ import {
   ScrollRestoration,
   type LinksFunction,
 } from 'react-router';
+import { ToastContainer } from 'react-toastify/unstyled';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { initMSWClient, initMSWServer } from '~/mocks';
 import type { Route } from './+types/root';
 import stylesheet from './app.css?url';
 import { css } from 'styled-system/css';
 import { useSearchHistory } from './store/useSearchHistory';
+import GlobalModal from './components/GlobalModal';
 
 initMSWServer();
 
@@ -36,6 +39,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       >
         <div
           className={css({
+            position: 'relative',
             margin: 'auto',
             maxWidth: '360px',
             height: '100%',
@@ -79,7 +83,26 @@ export default function App() {
     initializeSearchHistory();
   }, []);
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <GlobalModal />
+      <ToastContainer
+        autoClose={2000}
+        position='bottom-center'
+        hideProgressBar
+        closeButton={false}
+        toastStyle={{
+          backgroundColor: 'rgba(35, 39, 43, 0.8)',
+          color: 'white',
+          fontSize: '14px',
+          borderRadius: '12px',
+          padding: '12px 16px',
+          minHeight: 'auto',
+        }}
+      />
+    </>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
