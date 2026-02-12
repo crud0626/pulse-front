@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { DayPicker } from 'react-day-picker';
-import { ko } from 'react-day-picker/locale';
-import { css } from 'styled-system/css';
 import { useNavigate } from 'react-router';
+import { format } from 'date-fns';
+import { css } from 'styled-system/css';
 
 import VerticalChangeIcon from '~/assets/vertical-change.svg?react';
 import TrainIcon from '~/assets/train.svg?react';
+import SecondSearchFormSection from '~/components/SecondSearchFormSection';
 
 interface KeywordSearchContent {
   stationName: string;
@@ -110,12 +110,38 @@ export default function SearchPage() {
   });
 
   const [searchResult, setSearchResult] = useState<KeywordSearchContent[]>([]);
+  const [isOpenCollapse, setIsOpenCollapse] = useState<null | 0 | 1>(null);
   const [focusedInput, setFocusedInput] = useState<null | 'start' | 'end'>(null);
-  // TODO :: input 확정 컨텐츠에 대한 별도 컨트롤
   const [inputValue, setInputValue] = useState({
     start: '',
     end: '',
   });
+  const [departureTimeRange, setDepartureTimeRange] = useState<Record<'min' | 'max', null | string>>({
+    min: null,
+    max: null,
+  });
+
+  const handleSearch = () => {
+    {
+      if (
+        !selectedStation.start ||
+        !selectedStation.end ||
+        !selectedDate ||
+        !departureTimeRange.min ||
+        !departureTimeRange.max
+      )
+        return;
+
+      const searchResultUrl = new URL('/search/results', window.location.origin);
+      searchResultUrl.searchParams.set('departureStationId', selectedStation.start.stationID);
+      searchResultUrl.searchParams.set('arrivalStationId', selectedStation.end.stationID);
+      searchResultUrl.searchParams.set('searchDate', format(selectedDate, 'yyyy-MM-dd'));
+      searchResultUrl.searchParams.set('startTime', departureTimeRange.min);
+      searchResultUrl.searchParams.set('endTime', departureTimeRange.max);
+
+      navigate(searchResultUrl.pathname + searchResultUrl.search);
+    }
+  };
 
   useEffect(() => {
     setSearchResult([]);
@@ -130,6 +156,13 @@ export default function SearchPage() {
     // TODO :: 검색 API 요청 연결
     setSearchResult(MOCK_KEYWORD_RESULT.stations);
   }, [inputValue, focusedInput]);
+
+  const isSearchDisabled =
+    selectedStation.start === null ||
+    selectedStation.end === null ||
+    !selectedDate ||
+    departureTimeRange.min === null ||
+    departureTimeRange.max === null;
 
   return (
     <main
@@ -176,6 +209,7 @@ export default function SearchPage() {
         >
           {/* 검색 */}
           <details
+            open={isOpenCollapse === 0}
             name='accordion'
             className={css({
               flexShrink: 0,
@@ -191,6 +225,10 @@ export default function SearchPage() {
             })}
           >
             <summary
+              onClick={(event) => {
+                event.preventDefault();
+                setIsOpenCollapse((prev) => (prev === 0 ? null : 0));
+              }}
               className={css({
                 listStyle: 'none',
                 display: 'flex',
@@ -198,15 +236,52 @@ export default function SearchPage() {
                 alignItems: 'center',
               })}
             >
-              <p
-                className={css({
-                  fontSize: '18px',
-                  fontWeight: 'semibold',
-                  color: '#23272B',
-                })}
-              >
-                검색
-              </p>
+              {isOpenCollapse !== 0 && selectedStation.start && selectedStation.end ? (
+                <div
+                  className={css({
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                  })}
+                >
+                  <div
+                    className={css({
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                    })}
+                  >
+                    <span
+                      style={{ backgroundColor: selectedStation.start.lineColor }}
+                      className={css({ width: '10px', height: '10px', borderRadius: 'full' })}
+                    />
+                    <p className={css({ color: '#23272B' })}>{selectedStation.start.stationName}</p>
+                  </div>
+                  <div
+                    className={css({
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                    })}
+                  >
+                    <span
+                      style={{ backgroundColor: selectedStation.end.lineColor }}
+                      className={css({ width: '10px', height: '10px', borderRadius: 'full' })}
+                    />
+                    <p className={css({ color: '#23272B' })}>{selectedStation.end.stationName}</p>
+                  </div>
+                </div>
+              ) : (
+                <p
+                  className={css({
+                    fontSize: '18px',
+                    fontWeight: 'semibold',
+                    color: '#23272B',
+                  })}
+                >
+                  검색
+                </p>
+              )}
               <img
                 src='/icons/chevron.png'
                 alt=''
@@ -520,78 +595,33 @@ export default function SearchPage() {
             </div>
           </details>
           {/* 날짜 & 시간 입력 인풋 섹션 */}
-          <details
-            name='accordion'
-            className={css({
-              flexShrink: 0,
-              padding: '16px',
-              backgroundColor: 'white',
-              borderRadius: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-              cursor: 'pointer',
-              _open: {
-                flexGrow: 1,
-                flexShrink: 1,
-                overflowY: 'auto',
-                scrollbarWidth: 'none',
-              },
-            })}
-          >
-            <summary
-              className={css({
-                listStyle: 'none',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              })}
-            >
-              <p
-                className={css({
-                  fontSize: '18px',
-                  fontWeight: 'semibold',
-                  color: '#23272B',
-                })}
-              >
-                최소 출발시간
-              </p>
-              <img
-                src='/icons/chevron.png'
-                alt=''
-                className={css({
-                  width: '24px',
-                  height: '24px',
-                  transition: 'transform 0.2s',
-                  'details[open] &': {
-                    transform: 'rotate(180deg)',
-                  },
-                })}
-              />
-            </summary>
-            <div
-              className={css({
-                paddingTop: '24px',
-              })}
-            >
-              <DayPicker
-                hideNavigation
-                disabled={{ before: new Date() }}
-                numberOfMonths={3}
-                locale={ko}
-                mode='single'
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-              />
-            </div>
-          </details>
+          <SecondSearchFormSection
+            isOpenSection={isOpenCollapse === 1}
+            selectedDate={selectedDate}
+            departureTimeRange={departureTimeRange}
+            toggleSection={() => setIsOpenCollapse((prev) => (prev === 1 ? null : 1))}
+            onSelectDate={setSelectedDate}
+            onChangeTimeRange={(type, value) =>
+              setDepartureTimeRange((prev) => ({
+                ...prev,
+                [type]: value,
+              }))
+            }
+          />
         </section>
         <button
+          disabled={isSearchDisabled}
+          onClick={handleSearch}
           className={css({
             flexShrink: 0,
             height: '50px',
             backgroundColor: '#23272B',
             color: '#FFFFFF',
             borderRadius: '12px',
+            _disabled: {
+              backgroundColor: '#BBC1C9',
+              cursor: 'not-allowed',
+            },
           })}
         >
           검색하기
