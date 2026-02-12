@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { add, format, parse } from 'date-fns';
+import { add, format, isToday, parse } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { DayPicker } from 'react-day-picker';
 import { css } from 'styled-system/css';
+import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 
 import BottomSheet from './BottomSheet';
@@ -251,6 +251,7 @@ const SecondSearchFormSection = ({
           onClose={() => setIsOpenTimeSelector(null)}
         >
           <TimePicker
+            minTime={selectedDate && isToday(selectedDate) ? format(new Date(), 'HH:mm') : undefined}
             defaultValue={departureTimeRange.min ?? undefined}
             onChange={(values) => {
               onChangeTimeRange('min', values);
@@ -266,6 +267,7 @@ const SecondSearchFormSection = ({
           onClose={() => setIsOpenTimeSelector(null)}
         >
           <TimePicker
+            minTime={departureTimeRange.min ?? undefined}
             defaultValue={departureTimeRange.max ?? undefined}
             onChange={(values) => {
               onChangeTimeRange('max', values);

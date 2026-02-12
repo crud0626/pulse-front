@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { format } from 'date-fns';
+import { format, isToday } from 'date-fns';
 import { css } from 'styled-system/css';
 
 import VerticalChangeIcon from '~/assets/vertical-change.svg?react';
@@ -120,6 +120,32 @@ export default function SearchPage() {
     min: null,
     max: null,
   });
+
+  const handleChangeTimeRange = (type: 'min' | 'max', value: string) => {
+    if (type === 'min') {
+      setDepartureTimeRange({
+        min: value,
+        max: null,
+      });
+      return;
+    }
+
+    setDepartureTimeRange((prev) => ({
+      ...prev,
+      max: value,
+    }));
+  };
+
+  const handleChangeDate = (willChangeDate?: Date) => {
+    if (willChangeDate && isToday(willChangeDate)) {
+      setDepartureTimeRange({
+        min: null,
+        max: null,
+      });
+    }
+
+    setSelectedDate(willChangeDate);
+  };
 
   const handleSearch = () => {
     {
@@ -600,13 +626,8 @@ export default function SearchPage() {
             selectedDate={selectedDate}
             departureTimeRange={departureTimeRange}
             toggleSection={() => setIsOpenCollapse((prev) => (prev === 1 ? null : 1))}
-            onSelectDate={setSelectedDate}
-            onChangeTimeRange={(type, value) =>
-              setDepartureTimeRange((prev) => ({
-                ...prev,
-                [type]: value,
-              }))
-            }
+            onSelectDate={handleChangeDate}
+            onChangeTimeRange={handleChangeTimeRange}
           />
         </section>
         <button
