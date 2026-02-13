@@ -1,6 +1,6 @@
+import { isEqual } from 'lodash-es';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import isEqual from 'lodash/isEqual';
 
 import { searchHistoryItemSchema, type SearchHistoryItem } from '~/schemas';
 
@@ -25,7 +25,7 @@ function loadFromLocalStorage(): SearchHistoryItem[] {
   if (!Array.isArray(storedHistories)) return [];
 
   const validHistories = storedHistories.filter(
-    (history) => searchHistoryItemSchema.safeParse(history).success,
+    (history) => searchHistoryItemSchema.safeParse(history).success
   ) as SearchHistoryItem[];
 
   return validHistories;
@@ -77,5 +77,5 @@ export const useSearchHistory = create<SearchHistoryStore>()(
       }));
       window.localStorage.removeItem(STORAGE_KEY);
     },
-  })),
+  }))
 );

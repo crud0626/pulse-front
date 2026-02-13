@@ -17,7 +17,7 @@
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "isbot": "^5.1.31",
-    "lodash": "^4.17.23",
+    "lodash-es": "^4.17.23",
     "motion": "^12.28.1",
     "react": "^19.1.1",
     "react-day-picker": "^9.13.0",
@@ -32,7 +32,7 @@
   "devDependencies": {
     "@pandacss/dev": "^1.4.3",
     "@react-router/dev": "^7.9.2",
-    "@types/lodash": "^4.17.23",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^22",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",

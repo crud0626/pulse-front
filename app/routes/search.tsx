@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { format, isToday } from 'date-fns';
+import { debounce } from 'lodash-es';
 import { css } from 'styled-system/css';
 
 import VerticalChangeIcon from '~/assets/vertical-change.svg?react';
 import TrainIcon from '~/assets/train.svg?react';
 import SecondSearchFormSection from '~/components/SecondSearchFormSection';
+import { clientFetcher } from '~/lib/axios/client';
 
 interface KeywordSearchContent {
   stationName: string;
@@ -15,87 +17,6 @@ interface KeywordSearchContent {
   laneName: string;
   lineColor: string;
 }
-
-const MOCK_KEYWORD_RESULT: {
-  totalCount: number;
-  stations: KeywordSearchContent[];
-} = {
-  'totalCount': 9,
-  'stations': [
-    {
-      'stationName': '서울대벤처타운',
-      'stationID': '11720',
-      'x': 126.933892,
-      'y': 37.472059,
-      'laneName': '수도권 신림선',
-      'lineColor': '#A1C639',
-    },
-    {
-      'stationName': '서울대입구',
-      'stationID': '228',
-      'x': 126.952729,
-      'y': 37.481207,
-      'laneName': '수도권 2호선',
-      'lineColor': '#3CB44B',
-    },
-    {
-      'stationName': '서울숲',
-      'stationID': '1511',
-      'x': 127.04469,
-      'y': 37.543654,
-      'laneName': '수도권 수인.분당선',
-      'lineColor': '#F5A623',
-    },
-    {
-      'stationName': '서울역',
-      'stationID': '133',
-      'x': 126.972317,
-      'y': 37.555946,
-      'laneName': '수도권 1호선',
-      'lineColor': '#0052A4',
-    },
-    {
-      'stationName': '서울역',
-      'stationID': '426',
-      'x': 126.972713,
-      'y': 37.553514,
-      'laneName': '수도권 4호선',
-      'lineColor': '#00A4E3',
-    },
-    {
-      'stationName': '서울역',
-      'stationID': '1610',
-      'x': 126.971333,
-      'y': 37.556407,
-      'laneName': '경의중앙선',
-      'lineColor': '#73C7A6',
-    },
-    {
-      'stationName': '서울역',
-      'stationID': '4001',
-      'x': 126.969775,
-      'y': 37.553744,
-      'laneName': '수도권 공항철도',
-      'lineColor': '#5B9BD5',
-    },
-    {
-      'stationName': '서울역',
-      'stationID': '9116',
-      'x': 126.972616,
-      'y': 37.555474,
-      'laneName': '수도권 GTX-A',
-      'lineColor': '#9B59B6',
-    },
-    {
-      'stationName': '서울지방병무청',
-      'stationID': '11713',
-      'x': 126.922594,
-      'y': 37.505772,
-      'laneName': '수도권 신림선',
-      'lineColor': '#D35400',
-    },
-  ],
-};
 
 export default function SearchPage() {
   const navigate = useNavigate();
@@ -169,18 +90,29 @@ export default function SearchPage() {
     }
   };
 
-  useEffect(() => {
-    setSearchResult([]);
-  }, [focusedInput]);
+  const getSearchResult = async (searchKeyword: string) => {
+    try {
+      const { data } = await clientFetcher.get<{ totalCount: number; stations: KeywordSearchContent[] }>(
+        '/search/station',
+        {
+          params: { stationName: searchKeyword },
+        }
+      );
+
+      setSearchResult(data.stations);
+    } catch (error) {}
+  };
+
+  const debouncedSearch = useMemo(() => debounce(getSearchResult, 300), []);
 
   useEffect(() => {
-    if (focusedInput === null || !inputValue[focusedInput]) {
+    if (focusedInput === null || inputValue[focusedInput].length < 2) {
       setSearchResult([]);
+      debouncedSearch.cancel();
       return;
     }
 
-    // TODO :: 검색 API 요청 연결
-    setSearchResult(MOCK_KEYWORD_RESULT.stations);
+    debouncedSearch(inputValue[focusedInput]);
   }, [inputValue, focusedInput]);
 
   const isSearchDisabled =
