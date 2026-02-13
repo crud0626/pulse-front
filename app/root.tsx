@@ -17,6 +17,7 @@ import stylesheet from './app.css?url';
 import { css } from 'styled-system/css';
 import { useSearchHistory } from './store/useSearchHistory';
 import GlobalModal from './components/GlobalModal';
+import { useAuth } from './store/useAuth';
 
 initMSWServer();
 
@@ -63,6 +64,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { fetchUserInfo } = useAuth();
   const { initialize: initializeSearchHistory } = useSearchHistory();
 
   useEffect(() => {
@@ -81,6 +83,7 @@ export default function App() {
 
   useEffect(() => {
     initializeSearchHistory();
+    fetchUserInfo();
   }, []);
 
   return (
