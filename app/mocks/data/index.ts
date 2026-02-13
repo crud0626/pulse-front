@@ -1,3 +1,38 @@
+type CongestionLevels = 'LOW' | 'MEDIUM' | 'HIGH';
+
+interface StationCongestion {
+  stationId: string;
+  stationName: string;
+  lineName: string;
+  lineColor: string;
+  arrivalTime: string | null;
+  departureTime: string | null;
+  boardingCount: number;
+  alightingCount: number;
+  totalPassengers: number;
+}
+
+interface RouteRecommendation {
+  departureTime: string;
+  arrivalTime: string;
+  totalTime: number;
+  transferCount: number;
+  congestionScore: number;
+  congestionLevel: CongestionLevels;
+  stationCongestions: StationCongestion[];
+}
+
+export interface SearchRouteResult {
+  departureStationId: number;
+  arrivalStationId: number;
+  departureStationName: string;
+  arrivalStationName: string;
+  travelDate: string;
+  dayType: string;
+  recommendations: RouteRecommendation[];
+  message: string | null;
+}
+
 export const MOCK_BOOKMARK_LIST = [
   {
     'id': 2,
@@ -110,7 +145,7 @@ export const MOCK_SEARCH_STATION_RESULT = {
   ],
 };
 
-export const MOCK_SEARCH_ROUTE_RESULT = {
+export const MOCK_SEARCH_ROUTE_RESULT: SearchRouteResult = {
   'departureStationId': 517,
   'arrivalStationId': 133,
   'departureStationName': '화곡',

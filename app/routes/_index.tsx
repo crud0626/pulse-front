@@ -8,11 +8,14 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 
 import type { Route } from './+types/_index';
-import SubwayIcon from '~/assets/subway.svg?react';
+
 import { useSearchHistory } from '~/store/useSearchHistory';
-import { MOCK_BOOKMARK_LIST } from '~/mocks/data';
+import { type SearchRouteResult } from '~/mocks/data';
 import { clientFetcher } from '~/lib/axios/client';
 import { useAuth } from '~/store/useAuth';
+import RouteTimelineBar from '~/components/RouteTimelineBar';
+import RecommendedTimetable, { type CongestionLevels } from '~/components/RecommendedTimetable';
+import SimpleTransitRoute from '~/components/SimpleTransitRoute';
 
 interface BookmarkItem {
   id: number;
@@ -32,6 +35,14 @@ export function meta({}: Route.MetaArgs) {
   return [{ title: 'PULSE' }, { name: 'description', content: 'Welcome to PULSE!' }];
 }
 
+type RouteDetail = SearchRouteResult & {
+  timeTable: Array<{
+    departureTime: string;
+    arrivalTime: string;
+    congestionLevel: CongestionLevels;
+  }>;
+};
+
 export default function HomePage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
@@ -41,13 +52,15 @@ export default function HomePage() {
   const [isLoadingBookmarkRoute, setIsLoadingBookmarkRoute] = useState(false);
   const [bookmarkList, setBookmarkList] = useState<BookmarkItem[]>([]);
 
+  const [bookmarkRoute, setBookmarkRoute] = useState<RouteDetail | null>(null);
+
   const getBookmarkData = async () => {
     const targetBookmark = bookmarkList[activeIndex];
     if (!targetBookmark) return;
 
     setIsLoadingBookmarkRoute(true);
     try {
-      await clientFetcher.get('/search/route', {
+      const { data } = await clientFetcher.get<SearchRouteResult>('/search/route', {
         params: {
           departureStationId: targetBookmark.departureStationId,
           arrivalStationId: targetBookmark.arrivalStationId,
@@ -57,11 +70,16 @@ export default function HomePage() {
         },
       });
 
-      /**
-       * TODO ::
-       * 현재 북마크에 대한, route에 대한 상태 추가 필요
-       * 응답 데이터 수정 후,
-       */
+      const currentBookmarkRoute: RouteDetail = {
+        ...data,
+        timeTable: data.recommendations.map(({ departureTime, arrivalTime, congestionLevel }) => ({
+          departureTime,
+          arrivalTime,
+          congestionLevel,
+        })),
+      };
+
+      setBookmarkRoute(currentBookmarkRoute);
     } catch (error) {
       console.error(error);
     } finally {
@@ -69,7 +87,7 @@ export default function HomePage() {
     }
   };
 
-  // TODO :: 현재 보여지는 favorite의 output 결과, 구조가 변경되어야함. route
+  // TODO :: bookmarkRoute에 검색 결과에서 다뤘던 구조 적용 + SimpleTransitRoute의 props로 arrivalStationName 할당
   const [routes] = useState([
     {
       lineName: '4호선',
@@ -94,15 +112,13 @@ export default function HomePage() {
     if (!isLoggedIn) return;
 
     getBookmarkData();
-  }, [activeIndex]);
+  }, [isLoggedIn, activeIndex, bookmarkList]);
 
   useEffect(() => {
     if (!isLoggedIn) return;
 
     getBookmarkList();
   }, [isLoggedIn]);
-
-  const displayedBookmark = bookmarkList[activeIndex];
 
   return (
     <main
@@ -444,223 +460,13 @@ export default function HomePage() {
                           <div>데이터를 불러오고 있습니다.</div>
                         ) : (
                           <>
-                            {/* TODO :: Route 경로 */}
                             <div>
-                              {/* RouteTimelineBar */}
-                              <div
-                                className={css({
-                                  display: 'flex',
-                                  gap: '16px',
-                                  height: '16px',
-                                  backgroundColor: '#D3D7DD',
-                                  borderRadius: 'full',
-                                })}
-                              >
-                                {routes.map((route, idx) => (
-                                  <div
-                                    key={idx}
-                                    style={{
-                                      backgroundColor: route.lineColor,
-                                      flexGrow: route.time,
-                                    }}
-                                    className={css({
-                                      position: 'relative',
-                                      textAlign: 'center',
-                                      borderRadius: 'full',
-                                    })}
-                                  >
-                                    <SubwayIcon
-                                      className={css({
-                                        position: 'absolute',
-                                        left: 0,
-                                        top: 0,
-                                        width: '16px',
-                                        height: '16px',
-                                      })}
-                                    />
-                                    <p className={css({ color: 'white', fontSize: '12px' })}>{route.time}분</p>
-                                  </div>
-                                ))}
-                              </div>
+                              <RouteTimelineBar routes={routes} />
                             </div>
-                            {/* Route 경로 (Simple) */}
-                            <div
-                              className={css({
-                                display: 'flex',
-                                flexDirection: 'column',
-                              })}
-                            >
-                              {routes.map((route, idx) => (
-                                <div key={idx}>
-                                  <div
-                                    className={css({
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '8px',
-                                    })}
-                                  >
-                                    <img
-                                      src='/icons/subway-badge.png'
-                                      alt=''
-                                      className={css({
-                                        width: '14px',
-                                        height: '14px',
-                                      })}
-                                    />
-                                    <p className={css({ flex: '1', fontSize: '14px' })}>
-                                      <span
-                                        style={{ color: route.lineColor }}
-                                        className={css({ fontWeight: 'bold', paddingRight: '4px' })}
-                                      >
-                                        {route.lineName}
-                                      </span>{' '}
-                                      {route.stationName} {idx === 0 ? '승차' : '환승'}
-                                    </p>
-                                  </div>
-                                  <div
-                                    className={css({
-                                      marginLeft: '6px',
-                                      borderLeft: '1px solid #BBC1C9',
-                                      width: 0,
-                                      height: '14px',
-                                    })}
-                                  />
-                                </div>
-                              ))}
-                              <div
-                                className={css({
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                })}
-                              >
-                                <div className={css({ width: '14px', height: '14px', padding: '4px' })}>
-                                  <span
-                                    style={{ backgroundColor: '#000' }}
-                                    className={css({
-                                      display: 'block',
-                                      width: 'full',
-                                      height: 'full',
-                                      rounded: 'full',
-                                    })}
-                                  />
-                                </div>
-                                <p className={css({ fontSize: '14px' })}>금호역 하차</p>
-                              </div>
-                            </div>
+                            {/* TODO :: arrivalStationName 할당 */}
+                            <SimpleTransitRoute arrivalStationName='테스트' routes={routes} />
                             <hr className={css({ border: '1px dashed #D3D7DD' })} />
-                            {/* TODO :: TOP 3 영역 */}
-                            <div
-                              className={css({
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '4px',
-                              })}
-                            >
-                              <div
-                                className={css({
-                                  padding: '8px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '2px',
-                                  // BEST ROUTE STYLE
-                                  rounded: '8px',
-                                  border: '1px solid transparent',
-                                  backgroundImage:
-                                    'linear-gradient(#E9F5F1, #E9F5F1), linear-gradient(90deg, #00F5A0 0%, #00D9F5 100%)',
-                                  backgroundOrigin: 'border-box',
-                                  backgroundClip: 'padding-box, border-box',
-                                })}
-                              >
-                                <img
-                                  src='/icons/congestion-best.png'
-                                  alt=''
-                                  className={css({ width: '24px', height: '24px', flexShrink: 0 })}
-                                />
-                                <p className={css({ fontWeight: 'bold', flexGrow: 1 })}>여유로워요</p>
-                                <div
-                                  className={css({
-                                    flexShrink: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    fontSize: '14px',
-                                  })}
-                                >
-                                  <p>
-                                    출발 <span className={css({ fontWeight: 'semibold' })}>12:40</span>
-                                  </p>
-                                  <p>-</p>
-                                  <p>
-                                    도착 <span className={css({ fontWeight: 'semibold' })}>13:10</span>
-                                  </p>
-                                </div>
-                              </div>
-                              <div
-                                className={css({
-                                  padding: '8px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '2px',
-                                })}
-                              >
-                                <img
-                                  src='/icons/congestion-normal.png'
-                                  alt=''
-                                  className={css({ width: '24px', height: '24px', flexShrink: 0 })}
-                                />
-                                <p className={css({ flexGrow: 1 })}>보통이에요</p>
-                                <div
-                                  className={css({
-                                    flexShrink: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    fontSize: '14px',
-                                  })}
-                                >
-                                  <p>
-                                    출발 <span className={css({ fontWeight: 'semibold' })}>12:40</span>
-                                  </p>
-                                  <p>-</p>
-                                  <p>
-                                    도착 <span className={css({ fontWeight: 'semibold' })}>13:10</span>
-                                  </p>
-                                </div>
-                              </div>
-                              <div
-                                className={css({
-                                  padding: '8px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '2px',
-                                })}
-                              >
-                                <img
-                                  src='/icons/congestion-bad.png'
-                                  alt=''
-                                  className={css({ width: '24px', height: '24px', flexShrink: 0 })}
-                                />
-                                <p className={css({ flexGrow: 1 })}>혼잡해요</p>
-                                <div
-                                  className={css({
-                                    flexShrink: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    fontSize: '14px',
-                                  })}
-                                >
-                                  <p>
-                                    출발 <span className={css({ fontWeight: 'semibold' })}>12:40</span>
-                                  </p>
-                                  <p>-</p>
-                                  <p>
-                                    도착 <span className={css({ fontWeight: 'semibold' })}>13:10</span>
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
+                            <RecommendedTimetable timeTables={bookmarkRoute?.timeTable ?? []} />
                           </>
                         )}
                       </div>
