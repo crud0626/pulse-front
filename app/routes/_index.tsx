@@ -136,6 +136,7 @@ export default function HomePage() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          flexShrink: 0,
         })}
       >
         <Link to='/'>

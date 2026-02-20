@@ -96,7 +96,7 @@ export default function SearchPage() {
         '/search/station',
         {
           params: { stationName: searchKeyword },
-        }
+        },
       );
 
       setSearchResult(data.stations);

@@ -25,7 +25,7 @@ function loadFromLocalStorage(): SearchHistoryItem[] {
   if (!Array.isArray(storedHistories)) return [];
 
   const validHistories = storedHistories.filter(
-    (history) => searchHistoryItemSchema.safeParse(history).success
+    (history) => searchHistoryItemSchema.safeParse(history).success,
   ) as SearchHistoryItem[];
 
   return validHistories;
@@ -42,6 +42,7 @@ export const useSearchHistory = create<SearchHistoryStore>()(
       }));
     },
 
+    // TODO :: 중복 검증 필요
     addHistory: (item) => {
       const storedHistories = get().searchHistories;
       storedHistories.unshift(item);
@@ -77,5 +78,5 @@ export const useSearchHistory = create<SearchHistoryStore>()(
       }));
       window.localStorage.removeItem(STORAGE_KEY);
     },
-  }))
+  })),
 );
