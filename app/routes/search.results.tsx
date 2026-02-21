@@ -146,7 +146,7 @@ export default function SearchResultPage() {
 
   const getSearchResult = async () => {
     try {
-      const { data } = await clientFetcher.get<SearchRouteResponse>('/search/route');
+      const { data } = await clientFetcher.get<SearchRouteResponse>(`/search/route?${searchParams.toString()}`);
 
       const routeDetails = generateData(data.recommendations[0].stationCongestions);
       const nextSearchResult = {
