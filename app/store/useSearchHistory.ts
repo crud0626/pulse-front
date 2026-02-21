@@ -42,9 +42,13 @@ export const useSearchHistory = create<SearchHistoryStore>()(
       }));
     },
 
-    // TODO :: 중복 검증 필요
     addHistory: (item) => {
       const storedHistories = get().searchHistories;
+
+      if (storedHistories.some((history) => isEqual(history, item))) {
+        return;
+      }
+
       storedHistories.unshift(item);
 
       const nextHistories = storedHistories.slice(0, MAX_ITEM_COUNT);
