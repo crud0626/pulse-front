@@ -34,6 +34,7 @@ const RecommendedTimetable = ({ timeTables }: RecommendedTimetableProps) => {
     >
       {timeTables.map((timeTable, idx) => (
         <div
+          key={idx}
           className={css({
             padding: '8px',
             display: 'flex',

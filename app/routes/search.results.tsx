@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { differenceInMinutes, format, parse } from 'date-fns';
 import { css } from 'styled-system/css';
@@ -202,7 +202,7 @@ export default function SearchResultPage() {
   }, []);
 
   // TODO :: 결괏값을 받아오지 못하는 경우에 대한 예외케이스 추가 필요
-  if (searchResult === null) return;
+  if (searchResult === null || searchCondition === null) return;
 
   return (
     <main
@@ -270,7 +270,7 @@ export default function SearchResultPage() {
           })}
         >
           {/* TODO :: 호선 정보 및 호선 컬러 */}
-          <p
+          <div
             className={css({
               color: '#23272B',
               fontWeight: 'medium',
@@ -311,10 +311,10 @@ export default function SearchResultPage() {
               />
               <p className={css({ color: '#23272B', fontWeight: 'medium' })}>{searchResult.arrivalStationName}</p>
             </div>
-          </p>
-          {/* TODO :: 사용자 출발 시간 범위가 없음 */}
+          </div>
           <p className={css({ color: '#23272B', fontWeight: 'medium' })}>
-            {format(searchResult.travelDate, 'MM월 dd일')}, 10:30 - 13:30 중 출발
+            {format(searchResult.travelDate, 'MM월 dd일')}, {searchCondition.startTime} - {searchCondition.endTime} 중
+            출발
           </p>
         </section>
         {/* 섹션 2 : Route output */}
@@ -351,7 +351,7 @@ export default function SearchResultPage() {
           <div className={css({ display: 'flex', flexDirection: 'column', gap: '12px' })}>
             {/* 컴포넌트 분리 상세 Route 영역 */}
             {searchResult.routeDetails.map((routeDetail, routeDetailIdx) => (
-              <>
+              <Fragment key={routeDetailIdx}>
                 <div className={css({ display: 'flex', gap: '12px' })}>
                   <p
                     style={{ backgroundColor: routeDetail.lineColor }}
@@ -417,7 +417,7 @@ export default function SearchResultPage() {
                   })}
                 >
                   {routeDetail.passStations.map((stationName) => (
-                    <div className={css({ display: 'flex', gap: '12px' })}>
+                    <div key={stationName} className={css({ display: 'flex', gap: '12px' })}>
                       <div
                         className={css({
                           width: '24px',
@@ -454,7 +454,7 @@ export default function SearchResultPage() {
                     </div>
                   ))}
                 </div>
-              </>
+              </Fragment>
             ))}
             <p className={css({ paddingLeft: '36px', color: '#23272B', fontWeight: 'semibold' })}>
               {searchResult.route.stationCongestions.at(-1)!.stationName} 하차
