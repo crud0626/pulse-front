@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Swiper as SwiperType } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { add, format } from 'date-fns';
+import { add, differenceInMinutes, format, parse } from 'date-fns';
+import { toast } from 'react-toastify/unstyled';
 import { css } from 'styled-system/css';
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -16,6 +17,18 @@ import { useAuth } from '~/store/useAuth';
 import RouteTimelineBar from '~/components/RouteTimelineBar';
 import RecommendedTimetable, { type CongestionLevels } from '~/components/RecommendedTimetable';
 import SimpleTransitRoute from '~/components/SimpleTransitRoute';
+import { useGlobalModal } from '~/store/useGlobalModal';
+import BottomSheet from '~/components/BottomSheet';
+import type { SearchHistoryItem } from '~/schemas';
+
+function getMinutesDifference(time1: string, time2: string) {
+  // hh:mm:ss 형식을 Date 객체로 파싱
+  const date1 = parse(time1, 'HH:mm:ss', new Date());
+  const date2 = parse(time2, 'HH:mm:ss', new Date());
+
+  // 분 단위 차이 계산
+  return differenceInMinutes(date2, date1);
+}
 
 interface BookmarkItem {
   id: number;
@@ -35,7 +48,14 @@ export function meta({}: Route.MetaArgs) {
   return [{ title: 'PULSE' }, { name: 'description', content: 'Welcome to PULSE!' }];
 }
 
-type RouteDetail = SearchRouteResult & {
+interface SimpleRoute {
+  lineName: string;
+  lineColor: string;
+  stationName: string;
+  time: number;
+}
+
+type RouteInformation = SearchRouteResult & { routes: SimpleRoute[] } & {
   timeTable: Array<{
     departureTime: string;
     arrivalTime: string;
@@ -43,16 +63,90 @@ type RouteDetail = SearchRouteResult & {
   }>;
 };
 
+interface StationCongestion {
+  stationId: string;
+  stationName: string;
+  lineName: string;
+  lineColor: string;
+  arrivalTime: string | null;
+  departureTime: string | null;
+  boardingCount: number;
+  alightingCount: number;
+  totalPassengers: number;
+}
+
+const generateData = (routes: StationCongestion[]): SimpleRoute[] => {
+  const data: SimpleRoute[] = [];
+
+  let stationName = routes[0].stationName;
+  let lastLineName = routes[0].lineName;
+  let lastLineColor = routes[0].lineColor;
+  let startTime = routes[0].departureTime;
+
+  routes.forEach((r, idx) => {
+    if (r.lineName !== lastLineName) {
+      data.push({
+        lineName: lastLineName,
+        lineColor: lastLineColor,
+        time: getMinutesDifference(startTime!, routes[idx - 1].arrivalTime!),
+        stationName,
+      });
+
+      // 초기화
+      lastLineName = r.lineName;
+      lastLineColor = r.lineColor;
+      startTime = r.departureTime;
+      // 환승역 제거
+      stationName = r.stationName;
+    }
+  });
+
+  data.push({
+    lineName: lastLineName,
+    lineColor: lastLineColor,
+    time: getMinutesDifference(startTime!, routes.at(-1)!.arrivalTime!),
+    stationName,
+  });
+
+  return data;
+};
+
 export default function HomePage() {
+  const [isOpenBookmarkNameSheet, setIsOpenBookmarkNameSheet] = useState(false);
+  // TODO :: 네이밍 변경 필요
+  const [willAddBookmarkItem, setWillAddBookmarkItem] = useState<null | SearchHistoryItem>(null);
+  const [bookmarkName, setBookmarkName] = useState('');
+  const { open: openGlobalModal } = useGlobalModal();
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const { isLoggedIn } = useAuth();
-  const { searchHistories } = useSearchHistory();
+  const { searchHistories, removeHistory, clearHistories } = useSearchHistory();
 
   const [isLoadingBookmarkRoute, setIsLoadingBookmarkRoute] = useState(false);
   const [bookmarkList, setBookmarkList] = useState<BookmarkItem[]>([]);
 
-  const [bookmarkRoute, setBookmarkRoute] = useState<RouteDetail | null>(null);
+  const [bookmarkRoute, setBookmarkRoute] = useState<RouteInformation | null>(null);
+
+  const addBookmark = async () => {
+    try {
+      if (!willAddBookmarkItem) throw Error('Invalid Search Conditions');
+
+      await clientFetcher.post('/bookmarks', {
+        name: bookmarkName,
+        departureStationId: willAddBookmarkItem.startId,
+        arrivalStationId: willAddBookmarkItem.endId,
+        startTime: willAddBookmarkItem.startTime,
+        endTime: willAddBookmarkItem.endTime,
+      });
+
+      setIsOpenBookmarkNameSheet(false);
+      removeHistory(willAddBookmarkItem);
+
+      toast('즐겨찾기에 추가되었습니다.');
+    } catch (error) {
+      toast('에러가 발생하였습니다.');
+    }
+  };
 
   const getBookmarkData = async () => {
     const targetBookmark = bookmarkList[activeIndex];
@@ -70,8 +164,9 @@ export default function HomePage() {
         },
       });
 
-      const currentBookmarkRoute: RouteDetail = {
+      const currentBookmarkRoute: RouteInformation = {
         ...data,
+        routes: generateData(data.recommendations[0].stationCongestions),
         timeTable: data.recommendations.map(({ departureTime, arrivalTime, congestionLevel }) => ({
           departureTime,
           arrivalTime,
@@ -86,17 +181,6 @@ export default function HomePage() {
       setIsLoadingBookmarkRoute(false);
     }
   };
-
-  // TODO :: bookmarkRoute에 검색 결과에서 다뤘던 구조 적용 + SimpleTransitRoute의 props로 arrivalStationName 할당
-  const [routes] = useState([
-    {
-      lineName: '4호선',
-      lineColor: '#00A5DE',
-      stationName: '삼각지',
-      time: 35,
-    },
-    { lineName: '3호선', lineColor: '#EF7C1C', stationName: '충무로', time: 10 },
-  ]);
 
   const getBookmarkList = async () => {
     try {
@@ -167,7 +251,7 @@ export default function HomePage() {
               })}
             />
           </Link>
-          <Link to='/mypage'>
+          <Link to={isLoggedIn ? '/mypage' : '/login'}>
             <img
               src='/icons/hamburger.png'
               alt=''
@@ -260,6 +344,15 @@ export default function HomePage() {
                 </h2>
               </div>
               <button
+                onClick={() => {
+                  openGlobalModal({
+                    type: 'confirm',
+                    title: '최근 내역을 삭제할까요?',
+                    description: '삭제하면 다시 복구할 수 없으니 신중히 결정해 주세요.',
+                  }).then(() => {
+                    clearHistories();
+                  });
+                }}
                 className={css({
                   color: '#7E8490',
                   fontSize: '14px',
@@ -287,6 +380,7 @@ export default function HomePage() {
                       })}
                     >
                       <p
+                        style={{ '--marker-bg': history.startLineColor } as React.CSSProperties}
                         className={css({
                           position: 'relative',
                           fontSize: '14px',
@@ -306,14 +400,14 @@ export default function HomePage() {
                             bottom: 0,
                             marginY: 'auto',
                             rounded: 'full',
-                            // TODO :: 변경 처리
-                            backgroundColor: '#000',
+                            backgroundColor: 'var(--marker-bg)',
                           },
                         })}
                       >
                         {history.startName}
                       </p>
                       <p
+                        style={{ '--marker-bg': history.endLineColor } as React.CSSProperties}
                         className={css({
                           position: 'relative',
                           fontSize: '14px',
@@ -333,8 +427,7 @@ export default function HomePage() {
                             bottom: 0,
                             marginY: 'auto',
                             rounded: 'full',
-                            // TODO :: 변경 처리
-                            backgroundColor: '#000',
+                            backgroundColor: 'var(--marker-bg)',
                           },
                         })}
                       >
@@ -354,6 +447,10 @@ export default function HomePage() {
                       </p>
                     </div>
                     <button
+                      onClick={() => {
+                        setIsOpenBookmarkNameSheet(true);
+                        setWillAddBookmarkItem(history);
+                      }}
                       className={css({
                         flex: '0 1 24px',
                       })}
@@ -454,21 +551,28 @@ export default function HomePage() {
                               whiteSpace: 'nowrap',
                             })}
                           >
-                            {item.startTime} ~ {item.endTime} 중 출발
+                            {format(parse(item.startTime, 'HH:mm:ss', new Date()), 'HH:mm')} ~{' '}
+                            {format(parse(item.endTime, 'HH:mm:ss', new Date()), 'HH:mm')} 중 출발
                           </p>
                         </div>
                         {isLoadingBookmarkRoute ? (
                           <div>데이터를 불러오고 있습니다.</div>
-                        ) : (
+                        ) : bookmarkRoute ? (
                           <>
                             <div>
-                              <RouteTimelineBar routes={routes} />
+                              <RouteTimelineBar routes={bookmarkRoute.routes} />
                             </div>
-                            {/* TODO :: arrivalStationName 할당 */}
-                            <SimpleTransitRoute arrivalStationName='테스트' routes={routes} />
+                            <SimpleTransitRoute
+                              arrivalStationName={
+                                bookmarkRoute.recommendations[0].stationCongestions.at(-1)?.stationName ?? ''
+                              }
+                              routes={bookmarkRoute.routes}
+                            />
                             <hr className={css({ border: '1px dashed #D3D7DD' })} />
                             <RecommendedTimetable timeTables={bookmarkRoute?.timeTable ?? []} />
                           </>
+                        ) : (
+                          <div>데이터가 없습니다.</div>
                         )}
                       </div>
                     </SwiperSlide>
@@ -506,6 +610,82 @@ export default function HomePage() {
           </section>
         )}
       </div>
+      {isOpenBookmarkNameSheet && (
+        <BottomSheet
+          isOpen
+          onClose={() => setIsOpenBookmarkNameSheet(false)}
+          header={
+            <button onClick={() => setIsOpenBookmarkNameSheet(false)}>
+              <img src='/icons/close.png' alt='' className={css({ width: '24px', height: '24px' })} />
+            </button>
+          }
+        >
+          <div
+            className={css({
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              padding: '16px',
+            })}
+          >
+            <div
+              className={css({
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              })}
+            >
+              <div
+                className={css({
+                  height: '48px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  border: '1px solid #BBC1C9',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
+                  _focusWithin: {
+                    border: '2px solid transparent',
+                    backgroundImage: 'linear-gradient(#fff, #fff), linear-gradient(90deg, #00F5A0 0%, #00D9F5 100%)',
+                    backgroundOrigin: 'border-box',
+                    backgroundClip: 'padding-box, border-box',
+                    boxShadow: '0 2px 8px rgb(35 39 43/ 0.1)',
+                  },
+                })}
+              >
+                <input
+                  type='text'
+                  className={css({ width: '100%', height: '48px', outline: 'none' })}
+                  maxLength={10}
+                  value={bookmarkName}
+                  placeholder='추가할 즐겨찾기 이름을 입력해주세요'
+                  onChange={(event) => {
+                    if (event.currentTarget.value.length > 10) return;
+
+                    setBookmarkName(event.currentTarget.value);
+                  }}
+                />
+              </div>
+              <p className={css({ textAlign: 'right', fontSize: '12px', color: '#BBC1C9' })}>
+                {bookmarkName.length}/10자
+              </p>
+            </div>
+            <button
+              onClick={addBookmark}
+              disabled={bookmarkName.length < 1}
+              className={css({
+                paddingX: '12px',
+                height: '50px',
+                backgroundColor: '#23272B',
+                borderRadius: '12px',
+                color: 'white',
+              })}
+            >
+              등록하기
+            </button>
+          </div>
+        </BottomSheet>
+      )}
     </main>
   );
 }

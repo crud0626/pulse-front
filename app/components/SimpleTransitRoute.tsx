@@ -46,7 +46,7 @@ const SimpleTransitRoute = ({ arrivalStationName, routes }: SimpleTransitRoutePr
               marginLeft: '6px',
               borderLeft: '1px solid #BBC1C9',
               width: 0,
-              height: '14px',
+              height: '10px',
             })}
           />
         </div>
@@ -58,7 +58,7 @@ const SimpleTransitRoute = ({ arrivalStationName, routes }: SimpleTransitRoutePr
           gap: '8px',
         })}
       >
-        <div className={css({ width: '14px', height: '14px', padding: '4px' })}>
+        <div className={css({ width: '14px', height: '14px', padding: '3px' })}>
           <span
             style={{ backgroundColor: '#000' }}
             className={css({
