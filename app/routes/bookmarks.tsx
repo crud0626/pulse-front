@@ -1,53 +1,74 @@
-import { useMemo, useState } from 'react';
-import { css } from 'styled-system/css';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { Reorder } from 'motion/react';
+import { format, parse } from 'date-fns';
+import { toast } from 'react-toastify/unstyled';
+
+import { css } from 'styled-system/css';
+import { useAuth } from '~/store/useAuth';
+import { clientFetcher } from '~/lib/axios/client';
+
+interface BookmarkContent {
+  id: number;
+  name: string;
+  departureStationId: number;
+  arrivalStationId: number;
+  departureStationName: string;
+  arrivalStationName: string;
+  startTime: string;
+  endTime: string;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function BookmarksPage() {
+  const navigate = useNavigate();
   const [isEditMode, setIsEditMode] = useState(false);
+  const { isLoggedIn } = useAuth();
 
-  // MOCKING
-  const [favorites, setFavorites] = useState([
-    {
-      id: 1,
-      name: '터벅터벅',
-      startX: 126.9240786,
-      startY: 37.5216246,
-      start: '여의도역',
-      endX: 127.1001714,
-      endY: 37.5133497,
-      end: '잠실역',
-      minTime: '12:00',
-      maxTime: '13:00',
-      order: 1,
-    },
-    {
-      id: 2,
-      name: '출근2',
-      startX: 126.9813633,
-      startY: 37.4765746,
-      start: '사당역',
-      endX: 127.027619,
-      endY: 37.4979518,
-      end: '강남역',
-      minTime: '21:00',
-      maxTime: '22:00',
-      order: 2,
-    },
-  ]);
+  const [favorites, setFavorites] = useState<BookmarkContent[]>([]);
+  const [orderIdList, setOrderIdList] = useState<number[]>([]);
 
-  const orderIds = useMemo(() => favorites.map((favorite) => favorite.id), [favorites]);
-
-  const [orderIdList, setOrderIdList] = useState(orderIds);
-
-  // TODO :: API 연동 필요
-  const onChangeOrder = () => {
-    const nextFavorites = orderIdList
-      .map((orderId) => favorites.find((favoriteItem) => favoriteItem.id === orderId))
-      .filter((item) => item !== undefined);
-
-    setFavorites(nextFavorites);
-    setIsEditMode(false);
+  const getBookmarkList = async () => {
+    try {
+      const { data } = await clientFetcher.get<BookmarkContent[]>('/bookmarks');
+      setFavorites(data);
+    } catch (error) {
+      toast('즐겨찾기 리스트를 가져오지 못했습니다.');
+    }
   };
+
+  const onChangeOrder = async () => {
+    try {
+      const nextFavorites = orderIdList
+        .map((orderId) => favorites.find((favoriteItem) => favoriteItem.id === orderId))
+        .filter((item) => item !== undefined)
+        .map((item, displayOrder) => ({ bookmarkId: item.id, newDisplayOrder: displayOrder }));
+
+      await clientFetcher.put<string>('/bookmarks/reorder', {
+        items: nextFavorites,
+      });
+
+      setIsEditMode(false);
+    } catch (error) {
+      toast('에러가 발생하였습니다.');
+    }
+  };
+
+  useEffect(() => {
+    setOrderIdList(favorites.map((item) => item.id));
+  }, [favorites]);
+
+  useEffect(() => {
+    // TODO :: delay 문제 해결 필요 (사용자가 실제 로그인이 되어 있어도, 새로 고침이나 URL로 직접 접근 시, 사용자 정보 받아 온 뒤 변경되는 이유로, 딜레이가 발생해 로그인 유저라도 메인으로 이동됨)
+    // if (!isLoggedIn) {
+    //   navigate('/login');
+    //   return;
+    // }
+
+    getBookmarkList();
+  }, [isLoggedIn]);
 
   return (
     <main
@@ -81,7 +102,7 @@ export default function BookmarksPage() {
           </>
         ) : (
           <>
-            <button>이전</button>
+            <button onClick={() => navigate(-1)}>이전</button>
             <p>즐겨찾기 목록</p>
             <button
               onClick={() => {
@@ -141,6 +162,7 @@ export default function BookmarksPage() {
                         padding: '16px',
                         display: 'flex',
                         gap: '8px',
+                        cursor: 'pointer',
                       })}
                       whileDrag={{
                         border: '1px solid transparent',
@@ -185,6 +207,38 @@ export default function BookmarksPage() {
                 완료하기
               </button>
             </>
+          ) : favorites.length === 0 ? (
+            <div
+              className={css({
+                margin: 'auto',
+                width: '178px',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '24px',
+              })}
+            >
+              <div className={css({ display: 'flex', flexDir: 'column', gap: '12px' })}>
+                <img src='/icons/empty-bookmark.png' alt='' />
+                <p className={css({ color: '#4D525A', fontWeight: 'medium' })}>등록된 즐겨찾기가 없습니다.</p>
+              </div>
+              {/* TODO :: 즐겨찾기 등록 페이지 추가 된 후, click handler 할당 */}
+              <button
+                className={css({
+                  padding: '10px 16px',
+                  backgroundColor: '#00F5A0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  borderRadius: '10px',
+                })}
+              >
+                <img src='/icons/add.png' alt='' className={css({ width: '24px', height: '24px' })} />
+                <p className={css({ color: '#23272B' })}>등록하기</p>
+              </button>
+            </div>
           ) : (
             favorites.map((favorite) => (
               <div
@@ -211,21 +265,30 @@ export default function BookmarksPage() {
                     상세보기
                   </button>
                 </div>
-                <div className={css({ display: 'flex', flexDirection: 'column', gap: '10px' })}>
+                <div className={css({ display: 'flex', flexDirection: 'column', gap: '12px' })}>
                   <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
-                    <img src='/icons/route-start.png' alt='' className={css({ width: '16px', height: '16px' })} />
-                    <p className={css({ color: '#23272B', fontSize: '14px' })}>{favorite.start}</p>
+                    <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
+                      <span
+                        className={css({ width: '10px', height: '10px', backgroundColor: '#000', rounded: 'full' })}
+                      />
+                      <p className={css({ color: '#23272B', fontSize: '14px' })}>{favorite.departureStationName}</p>
+                    </div>
+                    <img
+                      src='/icons/chevron.png'
+                      alt=''
+                      className={css({ width: '18px', height: '18px', transform: 'rotate(-90deg)' })}
+                    />
+                    <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
+                      <span
+                        className={css({ width: '10px', height: '10px', backgroundColor: '#000', rounded: 'full' })}
+                      />
+                      <p className={css({ color: '#23272B', fontSize: '14px' })}>{favorite.arrivalStationName}</p>
+                    </div>
                   </div>
-                  <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
-                    <img src='/icons/route-end.png' alt='' className={css({ width: '16px', height: '16px' })} />
-                    <p className={css({ color: '#23272B', fontSize: '14px' })}>{favorite.end}</p>
-                  </div>
-                  <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
-                    <img src='/icons/clock-black.png' alt='' className={css({ width: '16px', height: '16px' })} />
-                    <p className={css({ color: '#23272B', fontSize: '14px' })}>
-                      {favorite.minTime} ~ {favorite.maxTime} 중 출발
-                    </p>
-                  </div>
+                  <p className={css({ color: '#23272B', fontSize: '14px' })}>
+                    {format(parse(favorite.startTime, 'HH:mm:ss', new Date()), 'HH:mm')} ~{' '}
+                    {format(parse(favorite.endTime, 'HH:mm:ss', new Date()), 'HH:mm')} 중 출발
+                  </p>
                 </div>
               </div>
             ))

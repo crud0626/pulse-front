@@ -474,33 +474,45 @@ export default function HomePage() {
                 boxShadow: '0 4px 16px rgb(35 39 43 / 0.1)',
               })}
             >
-              <Swiper
-                onSwiper={setSwiperInstance}
-                onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
-                spaceBetween={40}
-              >
-                {bookmarkList.length === 0 ? (
-                  <div className={css({ display: 'flex', flexDirection: 'column', gap: '24px' })}>
-                    <div className={css({ display: 'flex', flexDir: 'column', gap: '12px' })}>
-                      <img src='/icons/empty-bookmark.png' alt='' />
-                      <p className={css({ color: '#4D525A' })}>등록된 즐겨찾기가 없습니다.</p>
-                    </div>
-                    <button
-                      className={css({
-                        padding: '16px 10px',
-                        backgroundColor: '#00F5A0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        borderRadius: '10px',
-                      })}
-                    >
-                      <img src='/icons/add.png' alt='' />
-                      <p className={css({ color: '#23272B' })}>등록하기</p>
-                    </button>
+              {bookmarkList.length === 0 ? (
+                <div
+                  className={css({
+                    margin: 'auto',
+                    width: '178px',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '24px',
+                  })}
+                >
+                  <div className={css({ display: 'flex', flexDir: 'column', gap: '12px' })}>
+                    <img src='/icons/empty-bookmark.png' alt='' />
+                    <p className={css({ color: '#4D525A', fontWeight: 'medium' })}>등록된 즐겨찾기가 없습니다.</p>
                   </div>
-                ) : (
-                  bookmarkList.map((item) => (
+                  {/* TODO :: 즐겨찾기 등록 페이지 추가 된 후, click handler 할당 */}
+                  <button
+                    className={css({
+                      padding: '10px 16px',
+                      backgroundColor: '#00F5A0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      borderRadius: '10px',
+                    })}
+                  >
+                    <img src='/icons/add.png' alt='' className={css({ width: '24px', height: '24px' })} />
+                    <p className={css({ color: '#23272B' })}>등록하기</p>
+                  </button>
+                </div>
+              ) : (
+                <Swiper
+                  onSwiper={setSwiperInstance}
+                  onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
+                  spaceBetween={40}
+                >
+                  {bookmarkList.map((item) => (
                     <SwiperSlide>
                       <div
                         className={css({
@@ -576,9 +588,9 @@ export default function HomePage() {
                         )}
                       </div>
                     </SwiperSlide>
-                  ))
-                )}
-              </Swiper>
+                  ))}
+                </Swiper>
+              )}
             </div>
             <div
               className={css({
