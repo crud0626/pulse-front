@@ -6,15 +6,16 @@
     flex-direction: column;
     gap: 24px;
 
+    .rdp-month_caption {
+      display: none;
+      /* color: #303030;
+        font-weight: 500; */
+    }
+
     .rdp-month {
       display: flex;
       flex-direction: column;
       gap: 16px;
-
-      .rdp-month_caption {
-        color: #303030;
-        font-weight: 500;
-      }
 
       .rdp-weekdays {
         .rdp-weekday {

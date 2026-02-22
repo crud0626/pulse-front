@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { add, format, isToday, parse } from 'date-fns';
+import { add, addMonths, format, isSameMonth, isToday, parse, startOfMonth } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { css } from 'styled-system/css';
-import { DayPicker } from 'react-day-picker';
+import { CalendarMonth, DayPicker, useDayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 
 import BottomSheet from './BottomSheet';
@@ -17,6 +17,43 @@ type SecondSearchFormSectionProps = {
   onChangeTimeRange: (type: 'min' | 'max', value: string) => void;
 };
 
+function getMonthRange() {
+  return Array.from({ length: 12 }, (_, i) => addMonths(startOfMonth(new Date()), i));
+}
+
+function CustomCaption({
+  children,
+  calendarMonth,
+  onClick,
+}: React.HTMLAttributes<HTMLSpanElement> & { calendarMonth: CalendarMonth; displayIndex: number }) {
+  const { nextMonth, previousMonth, goToMonth } = useDayPicker();
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button onClick={() => previousMonth && goToMonth(previousMonth)}>
+          <img
+            src='/icons/chevron.png'
+            alt=''
+            className={css({ width: '20px', height: '20px', transform: 'rotate(90deg)' })}
+          />
+        </button>
+        <p onClick={onClick} className={css({ color: '#303030', fontWeight: 'medium', textDecoration: 'underline' })}>
+          {format(calendarMonth.date, 'yyyy년 M월', { locale: ko })}
+        </p>
+        <button onClick={() => nextMonth && goToMonth(nextMonth)}>
+          <img
+            src='/icons/chevron.png'
+            alt=''
+            className={css({ width: '20px', height: '20px', transform: 'rotate(-90deg)' })}
+          />
+        </button>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 const SecondSearchFormSection = ({
   isOpenSection,
   selectedDate,
@@ -25,6 +62,8 @@ const SecondSearchFormSection = ({
   onSelectDate,
   onChangeTimeRange,
 }: SecondSearchFormSectionProps) => {
+  const [displayMonth, setDisplayMonth] = useState(new Date());
+  const [isOpenMonthSelector, setIsOpenMonthSelector] = useState(false);
   const [isOpenTimeSelector, setIsOpenTimeSelector] = useState<null | 'min' | 'max'>(null);
   const [focusSection, setFocusSection] = useState<0 | 1>(0);
 
@@ -144,9 +183,21 @@ const SecondSearchFormSection = ({
       >
         {focusSection === 0 ? (
           <DayPicker
-            navLayout='around'
+            components={{
+              Month: (props) => (
+                <CustomCaption
+                  {...props}
+                  onClick={() => {
+                    setIsOpenMonthSelector(true);
+                  }}
+                />
+              ),
+            }}
+            hideNavigation
             mode='single'
             locale={ko}
+            month={displayMonth}
+            onMonthChange={setDisplayMonth}
             startMonth={new Date()}
             endMonth={add(new Date(), { years: 1 })}
             disabled={{ before: new Date(), after: add(new Date(), { years: 1 }) }}
@@ -274,6 +325,35 @@ const SecondSearchFormSection = ({
               setIsOpenTimeSelector(null);
             }}
           />
+        </BottomSheet>
+      )}
+      {isOpenMonthSelector && (
+        <BottomSheet
+          isOpen
+          header={<p className={css({ color: '#23272B', fontSize: '18px', fontWeight: 'semibold' })}>월 선택하기</p>}
+          onClose={() => setIsOpenMonthSelector(false)}
+        >
+          <div className={css({ padding: '16px', display: 'flex', flexDirection: 'column', gap: '4px' })}>
+            {getMonthRange().map((date) => (
+              <button
+                key={date.toString()}
+                onClick={() => {
+                  setDisplayMonth(date);
+                  setIsOpenMonthSelector(false);
+                }}
+                className={css({
+                  width: '100%',
+                  paddingY: '8px',
+                  textAlign: 'left',
+                  _hover: { backgroundColor: '#E7EAED' },
+                })}
+              >
+                <p className={css({ color: isSameMonth(displayMonth, date) ? '#00F5A0' : '#35393F' })}>
+                  {format(date, 'yy년 M월')}
+                </p>
+              </button>
+            ))}
+          </div>
         </BottomSheet>
       )}
     </details>
