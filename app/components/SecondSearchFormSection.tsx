@@ -247,12 +247,12 @@ const SecondSearchFormSection = ({
                       ? format(parse(departureTimeRange.min, 'HH:mm', new Date()), 'hh시 mm분 a')
                       : ''
                   }
-                  className={css({ flexGrow: 1, outline: 'none' })}
+                  className={css({ flexGrow: 1, minWidth: 0, outline: 'none' })}
                 />
                 <img
                   src='/icons/chevron.png'
                   alt=''
-                  className={css({ flexShrink: 1, width: '24px', height: '24px' })}
+                  className={css({ flexShrink: 0, width: '24px', height: '24px' })}
                 />
               </div>
             </div>
@@ -283,12 +283,12 @@ const SecondSearchFormSection = ({
                       ? format(parse(departureTimeRange.max, 'HH:mm', new Date()), 'hh시 mm분 a')
                       : ''
                   }
-                  className={css({ flexGrow: 1, outline: 'none' })}
+                  className={css({ flexGrow: 1, minWidth: 0, outline: 'none' })}
                 />
                 <img
                   src='/icons/chevron.png'
                   alt=''
-                  className={css({ flexShrink: 1, width: '24px', height: '24px' })}
+                  className={css({ flexShrink: 0, width: '24px', height: '24px' })}
                 />
               </div>
             </div>

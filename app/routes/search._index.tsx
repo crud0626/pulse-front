@@ -272,6 +272,8 @@ export default function SearchPage() {
                 <div
                   className={css({
                     flexGrow: 1,
+                    flexShrink: 1,
+                    minWidth: 0,
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '6px',
@@ -438,6 +440,7 @@ export default function SearchPage() {
                     />
                     <button
                       className={css({
+                        flexShrink: 0,
                         visibility: focusedInput === 'end' ? 'visible' : 'hidden',
                       })}
                       onClick={() => {
@@ -456,14 +459,17 @@ export default function SearchPage() {
                         src='/icons/close-circle.png'
                         alt=''
                         className={css({
+                          flexShrink: 0,
                           width: '18px',
                           height: '18px',
+                          objectFit: 'cover',
                         })}
                       />
                     </button>
                   </div>
                 </div>
                 <button
+                  className={css({ flexShrink: 0 })}
                   onClick={() => {
                     if (!selectedStation.start && !selectedStation.end) return;
 
