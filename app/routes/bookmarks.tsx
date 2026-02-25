@@ -15,6 +15,10 @@ interface BookmarkContent {
   arrivalStationId: number;
   departureStationName: string;
   arrivalStationName: string;
+  departureLineName: string;
+  departureLineColor: string;
+  arrivalLineName: string;
+  arrivalLineColor: string;
   startTime: string;
   endTime: string;
   displayOrder: number;
@@ -266,12 +270,15 @@ export default function BookmarksPage() {
                   </button>
                 </div>
                 <div className={css({ display: 'flex', flexDirection: 'column', gap: '12px' })}>
-                  <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
+                  <div className={css({ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' })}>
                     <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
                       <span
-                        className={css({ width: '10px', height: '10px', backgroundColor: '#000', rounded: 'full' })}
+                        style={{ backgroundColor: favorite.departureLineColor }}
+                        className={css({ width: '10px', height: '10px', rounded: 'full' })}
                       />
-                      <p className={css({ color: '#23272B', fontSize: '14px' })}>{favorite.departureStationName}</p>
+                      <p
+                        className={css({ color: '#23272B', fontSize: '14px' })}
+                      >{`${favorite.departureStationName} ${favorite.departureLineName}`}</p>
                     </div>
                     <img
                       src='/icons/chevron.png'
@@ -280,9 +287,12 @@ export default function BookmarksPage() {
                     />
                     <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
                       <span
-                        className={css({ width: '10px', height: '10px', backgroundColor: '#000', rounded: 'full' })}
+                        style={{ backgroundColor: favorite.arrivalLineColor }}
+                        className={css({ width: '10px', height: '10px', rounded: 'full' })}
                       />
-                      <p className={css({ color: '#23272B', fontSize: '14px' })}>{favorite.arrivalStationName}</p>
+                      <p
+                        className={css({ color: '#23272B', fontSize: '14px' })}
+                      >{`${favorite.arrivalStationName} ${favorite.arrivalLineName}`}</p>
                     </div>
                   </div>
                   <p className={css({ color: '#23272B', fontSize: '14px' })}>
