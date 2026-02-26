@@ -349,8 +349,10 @@ export default function HomePage() {
                     type: 'confirm',
                     title: '최근 내역을 삭제할까요?',
                     description: '삭제하면 다시 복구할 수 없으니 신중히 결정해 주세요.',
-                  }).then(() => {
-                    clearHistories();
+                  }).then((isConfirmed) => {
+                    if (isConfirmed) {
+                      clearHistories();
+                    }
                   });
                 }}
                 className={css({
