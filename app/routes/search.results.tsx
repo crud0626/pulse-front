@@ -289,7 +289,8 @@ export default function SearchResultPage() {
               })}
             >
               <span
-                className={css({ width: '10px', height: '10px', borderRadius: 'full', backgroundColor: 'yellow' })}
+                style={{ backgroundColor: searchResult.routeDetails[0].lineColor }}
+                className={css({ width: '10px', height: '10px', borderRadius: 'full' })}
               />
               <p className={css({ color: '#23272B', fontWeight: 'medium' })}>{searchResult.departureStationName}</p>
             </div>
@@ -307,7 +308,8 @@ export default function SearchResultPage() {
               })}
             >
               <span
-                className={css({ width: '10px', height: '10px', borderRadius: 'full', backgroundColor: 'yellow' })}
+                style={{ backgroundColor: searchResult.routeDetails.at(-1)!.lineColor }}
+                className={css({ width: '10px', height: '10px', borderRadius: 'full' })}
               />
               <p className={css({ color: '#23272B', fontWeight: 'medium' })}>{searchResult.arrivalStationName}</p>
             </div>
