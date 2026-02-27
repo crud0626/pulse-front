@@ -366,7 +366,8 @@ export default function HomePage() {
             <Swiper spaceBetween={16} slidesPerView={1.3} className={css({ width: '100%' })}>
               {searchHistories.map((history) => (
                 <SwiperSlide className={css({ backgroundColor: '#F5F7F9', borderRadius: '12px', padding: '12px' })}>
-                  <div
+                  <Link
+                    to={`/search/results?departureStationId=${history.startId}&arrivalStationId=${history.endId}&searchDate=${history.searchDate}&startTime=${history.startTime}&endTime=${history.endTime}`}
                     className={css({
                       display: 'flex',
                       alignItems: 'start',
@@ -449,7 +450,11 @@ export default function HomePage() {
                       </p>
                     </div>
                     <button
-                      onClick={() => {
+                      onClick={(event) => {
+                        // INFO :: Link 태그 이동 방지
+                        event.preventDefault();
+                        event.stopPropagation();
+
                         setIsOpenBookmarkNameSheet(true);
                         setWillAddBookmarkItem(history);
                       }}
@@ -459,7 +464,7 @@ export default function HomePage() {
                     >
                       <img src='/icons/empty-star.png' alt='' className={css({ width: '24px', height: '24px' })} />
                     </button>
-                  </div>
+                  </Link>
                 </SwiperSlide>
               ))}
             </Swiper>

@@ -196,6 +196,7 @@ export default function SearchResultPage() {
           startTime: searchCondition.startTime!,
           endTime: searchCondition.endTime!,
           endLineColor: searchResultData.routeDetails.at(-1)!.lineColor,
+          searchDate: searchResultData.travelDate,
         });
       }
     }, 500);

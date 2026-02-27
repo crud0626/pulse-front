@@ -14,6 +14,7 @@ export const searchHistoryItemSchema = z.object({
   startTime: timeSchema,
   endTime: timeSchema,
   endLineColor: hexColorSchema,
+  searchDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
 
 export type SearchHistoryItem = z.infer<typeof searchHistoryItemSchema>;
