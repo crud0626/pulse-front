@@ -85,10 +85,12 @@ const generateData = (routes: StationCongestion[]): SimpleRoute[] => {
 
   routes.forEach((r, idx) => {
     if (r.lineName !== lastLineName) {
+      const durationMinutes = getMinutesDifference(startTime!, routes[idx - 1].arrivalTime!);
+
       data.push({
         lineName: lastLineName,
         lineColor: lastLineColor,
-        time: getMinutesDifference(startTime!, routes[idx - 1].arrivalTime!),
+        time: durationMinutes > -1 ? durationMinutes : durationMinutes + 1440,
         stationName,
       });
 
@@ -101,10 +103,12 @@ const generateData = (routes: StationCongestion[]): SimpleRoute[] => {
     }
   });
 
+  const durationMinutes = getMinutesDifference(startTime!, routes.at(-1)!.arrivalTime!);
+
   data.push({
     lineName: lastLineName,
     lineColor: lastLineColor,
-    time: getMinutesDifference(startTime!, routes.at(-1)!.arrivalTime!),
+    time: durationMinutes > -1 ? durationMinutes : durationMinutes + 1440,
     stationName,
   });
 

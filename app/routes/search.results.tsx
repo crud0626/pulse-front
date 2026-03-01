@@ -84,10 +84,12 @@ export default function SearchResultPage() {
 
     routes.forEach((r, idx) => {
       if (r.lineName !== lastLineName) {
+        const durationMinutes = getMinutesDifference(startTime!, routes[idx - 1].arrivalTime!);
+
         data.push({
           lineName: lastLineName,
           lineColor: lastLineColor,
-          times: getMinutesDifference(startTime!, routes[idx - 1].arrivalTime!),
+          times: durationMinutes > -1 ? durationMinutes : durationMinutes + 1440,
           passStations: throughStations,
           startStationName,
         });
@@ -107,12 +109,14 @@ export default function SearchResultPage() {
       }
     });
 
+    const durationMinutes = getMinutesDifference(startTime!, routes.at(-1)!.arrivalTime!);
+
     // 도착역 제거
     throughStations.pop();
     data.push({
       lineName: lastLineName,
       lineColor: lastLineColor,
-      times: getMinutesDifference(startTime!, routes.at(-1)!.arrivalTime!),
+      times: durationMinutes > -1 ? durationMinutes : durationMinutes + 1440,
       passStations: throughStations,
       startStationName,
     });
