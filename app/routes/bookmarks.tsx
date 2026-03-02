@@ -7,6 +7,7 @@ import { toast } from 'react-toastify/unstyled';
 import { css } from 'styled-system/css';
 import { useAuth } from '~/store/useAuth';
 import { clientFetcher } from '~/lib/axios/client';
+import { useGlobalModal } from '~/store/useGlobalModal';
 
 interface BookmarkContent {
   id: number;
@@ -15,6 +16,10 @@ interface BookmarkContent {
   arrivalStationId: number;
   departureStationName: string;
   arrivalStationName: string;
+  departureLineName: string;
+  departureLineColor: string;
+  arrivalLineName: string;
+  arrivalLineColor: string;
   startTime: string;
   endTime: string;
   displayOrder: number;
@@ -26,6 +31,7 @@ export default function BookmarksPage() {
   const navigate = useNavigate();
   const [isEditMode, setIsEditMode] = useState(false);
   const { isLoggedIn } = useAuth();
+  const { open } = useGlobalModal();
 
   const [favorites, setFavorites] = useState<BookmarkContent[]>([]);
   const [orderIdList, setOrderIdList] = useState<number[]>([]);
@@ -52,6 +58,26 @@ export default function BookmarksPage() {
 
       setIsEditMode(false);
     } catch (error) {
+      toast('에러가 발생하였습니다.');
+    }
+  };
+
+  const handleDeleteAllBookmark = async () => {
+    try {
+      const isConfirmed = await open({
+        type: 'confirm',
+        title: '즐겨찾기 내역을 전체삭제할까요?',
+        description: '삭제하면 다시 복구할 수 없으니 신중히 결정해 주세요.',
+      });
+
+      if (!isConfirmed) return;
+
+      await clientFetcher.delete('/bookmarks');
+      await getBookmarkList();
+      setIsEditMode(false);
+      toast('즐겨찾기 리스트가 전부 삭제되었습니다.');
+    } catch (error) {
+      console.error(error);
       toast('에러가 발생하였습니다.');
     }
   };
@@ -96,21 +122,35 @@ export default function BookmarksPage() {
                 setIsEditMode(false);
               }}
             >
-              닫기
+              <img src='/icons/close.png' alt='' className={css({ width: '24px', height: '24px' })} />
             </button>
-            <button>삭제</button>
+            <button onClick={handleDeleteAllBookmark}>
+              <img src='/icons/cleaning.png' alt='' className={css({ width: '24px', height: '24px' })} />
+            </button>
           </>
         ) : (
           <>
-            <button onClick={() => navigate(-1)}>이전</button>
-            <p>즐겨찾기 목록</p>
-            <button
-              onClick={() => {
-                setIsEditMode(true);
-              }}
-            >
-              편집
+            <button onClick={() => navigate(-1)}>
+              <img
+                src='/icons/chevron.png'
+                alt=''
+                className={css({ width: '24px', height: '24px', transform: 'rotate(90deg)' })}
+              />
             </button>
+            <p>즐겨찾기 목록</p>
+            <div className={css({ display: 'flex', alignItems: 'center', gap: '12px' })}>
+              <button
+                onClick={() => {
+                  setIsEditMode(true);
+                }}
+              >
+                <img src='/icons/layers.png' alt='' className={css({ width: '24px', height: '24px' })} />
+              </button>
+              {/* TODO :: 즐겨찾기 등록 페이지 추가 후 수정 */}
+              <button>
+                <img src='/icons/add.png' alt='' className={css({ width: '24px', height: '24px' })} />
+              </button>
+            </div>
           </>
         )}
       </header>
@@ -266,12 +306,15 @@ export default function BookmarksPage() {
                   </button>
                 </div>
                 <div className={css({ display: 'flex', flexDirection: 'column', gap: '12px' })}>
-                  <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
+                  <div className={css({ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' })}>
                     <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
                       <span
-                        className={css({ width: '10px', height: '10px', backgroundColor: '#000', rounded: 'full' })}
+                        style={{ backgroundColor: favorite.departureLineColor }}
+                        className={css({ width: '10px', height: '10px', rounded: 'full' })}
                       />
-                      <p className={css({ color: '#23272B', fontSize: '14px' })}>{favorite.departureStationName}</p>
+                      <p
+                        className={css({ color: '#23272B', fontSize: '14px' })}
+                      >{`${favorite.departureStationName} ${favorite.departureLineName}`}</p>
                     </div>
                     <img
                       src='/icons/chevron.png'
@@ -280,9 +323,12 @@ export default function BookmarksPage() {
                     />
                     <div className={css({ display: 'flex', alignItems: 'center', gap: '8px' })}>
                       <span
-                        className={css({ width: '10px', height: '10px', backgroundColor: '#000', rounded: 'full' })}
+                        style={{ backgroundColor: favorite.arrivalLineColor }}
+                        className={css({ width: '10px', height: '10px', rounded: 'full' })}
                       />
-                      <p className={css({ color: '#23272B', fontSize: '14px' })}>{favorite.arrivalStationName}</p>
+                      <p
+                        className={css({ color: '#23272B', fontSize: '14px' })}
+                      >{`${favorite.arrivalStationName} ${favorite.arrivalLineName}`}</p>
                     </div>
                   </div>
                   <p className={css({ color: '#23272B', fontSize: '14px' })}>

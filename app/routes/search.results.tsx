@@ -84,10 +84,12 @@ export default function SearchResultPage() {
 
     routes.forEach((r, idx) => {
       if (r.lineName !== lastLineName) {
+        const durationMinutes = getMinutesDifference(startTime!, routes[idx - 1].arrivalTime!);
+
         data.push({
           lineName: lastLineName,
           lineColor: lastLineColor,
-          times: getMinutesDifference(startTime!, routes[idx - 1].arrivalTime!),
+          times: durationMinutes > -1 ? durationMinutes : durationMinutes + 1440,
           passStations: throughStations,
           startStationName,
         });
@@ -107,12 +109,14 @@ export default function SearchResultPage() {
       }
     });
 
+    const durationMinutes = getMinutesDifference(startTime!, routes.at(-1)!.arrivalTime!);
+
     // 도착역 제거
     throughStations.pop();
     data.push({
       lineName: lastLineName,
       lineColor: lastLineColor,
-      times: getMinutesDifference(startTime!, routes.at(-1)!.arrivalTime!),
+      times: durationMinutes > -1 ? durationMinutes : durationMinutes + 1440,
       passStations: throughStations,
       startStationName,
     });
@@ -196,6 +200,7 @@ export default function SearchResultPage() {
           startTime: searchCondition.startTime!,
           endTime: searchCondition.endTime!,
           endLineColor: searchResultData.routeDetails.at(-1)!.lineColor,
+          searchDate: searchResultData.travelDate,
         });
       }
     }, 500);
@@ -289,7 +294,8 @@ export default function SearchResultPage() {
               })}
             >
               <span
-                className={css({ width: '10px', height: '10px', borderRadius: 'full', backgroundColor: 'yellow' })}
+                style={{ backgroundColor: searchResult.routeDetails[0].lineColor }}
+                className={css({ width: '10px', height: '10px', borderRadius: 'full' })}
               />
               <p className={css({ color: '#23272B', fontWeight: 'medium' })}>{searchResult.departureStationName}</p>
             </div>
@@ -307,7 +313,8 @@ export default function SearchResultPage() {
               })}
             >
               <span
-                className={css({ width: '10px', height: '10px', borderRadius: 'full', backgroundColor: 'yellow' })}
+                style={{ backgroundColor: searchResult.routeDetails.at(-1)!.lineColor }}
+                className={css({ width: '10px', height: '10px', borderRadius: 'full' })}
               />
               <p className={css({ color: '#23272B', fontWeight: 'medium' })}>{searchResult.arrivalStationName}</p>
             </div>
@@ -350,112 +357,123 @@ export default function SearchResultPage() {
           </h3>
           <div className={css({ display: 'flex', flexDirection: 'column', gap: '12px' })}>
             {/* 컴포넌트 분리 상세 Route 영역 */}
-            {searchResult.routeDetails.map((routeDetail, routeDetailIdx) => (
-              <Fragment key={routeDetailIdx}>
-                <div className={css({ display: 'flex', gap: '12px' })}>
-                  <p
-                    style={{ backgroundColor: routeDetail.lineColor }}
-                    className={css({
-                      position: 'relative',
-                      width: '24px',
-                      height: '24px',
-                      textAlign: 'center',
-                      color: 'white',
-                      borderRadius: 'full',
-                    })}
-                  >
-                    {routeDetail.lineName[0]}
-                    <span
+            {searchResult.routeDetails.map((routeDetail, routeDetailIdx) => {
+              const hasMultipleStops = routeDetail.passStations.length > 1;
+
+              return (
+                <Fragment key={routeDetailIdx}>
+                  <div className={css({ display: 'flex', gap: '12px' })}>
+                    <p
                       style={{ backgroundColor: routeDetail.lineColor }}
                       className={css({
-                        position: 'absolute',
-                        height: '32px',
-                        width: '1px',
-                        top: 'calc(100% + 4px)',
-                        left: '50%',
+                        position: 'relative',
+                        width: '24px',
+                        height: '24px',
+                        textAlign: 'center',
+                        color: 'white',
+                        borderRadius: 'full',
                       })}
-                    />
-                  </p>
-                  <div>
-                    <p
-                      className={css({ color: '#23272B', fontWeight: 'semibold' })}
-                    >{`${routeDetail.startStationName} ${routeDetailIdx === 0 ? '승차' : '환승'}`}</p>
-                    <button
-                      className={css({ display: 'flex', alignItems: 'center' })}
-                      onClick={() => {
-                        setToggleDetailRoute((prev) => {
-                          const nextState = [...prev];
-                          nextState[routeDetailIdx] = !prev[routeDetailIdx];
-                          return nextState;
-                        });
-                      }}
                     >
-                      <p
-                        className={css({ color: '#4D525A', fontSize: '14px' })}
-                      >{`${routeDetail.times}분소요 · ${routeDetail.passStations.length + 1}개역 이동`}</p>
-                      <img
-                        src='/icons/chevron.png'
-                        alt=''
+                      {routeDetail.lineName[0]}
+                      <span
+                        style={{ backgroundColor: routeDetail.lineColor }}
                         className={css({
-                          width: '18px',
-                          height: '18px',
-                          transform: toggleDetailRoute[routeDetailIdx] ? 'rotate(180deg)' : 'rotate(0deg)',
+                          position: 'absolute',
+                          height: '32px',
+                          width: '1px',
+                          top: 'calc(100% + 4px)',
+                          left: '50%',
                         })}
                       />
-                    </button>
-                  </div>
-                </div>
-                {/* details */}
-                <div
-                  className={css({
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    overflow:
-                      routeDetail.passStations.length === 0 || toggleDetailRoute[routeDetailIdx] ? 'visible' : 'hidden',
-                    height: routeDetail.passStations.length === 0 || toggleDetailRoute[routeDetailIdx] ? 'auto' : '0px',
-                  })}
-                >
-                  {routeDetail.passStations.map((stationName) => (
-                    <div key={stationName} className={css({ display: 'flex', gap: '12px' })}>
-                      <div
+                    </p>
+                    <div>
+                      <p
+                        className={css({ color: '#23272B', fontWeight: 'semibold' })}
+                      >{`${routeDetail.startStationName} ${routeDetailIdx === 0 ? '승차' : '환승'}`}</p>
+                      <button
                         className={css({
-                          width: '24px',
-                          height: '24px',
                           display: 'flex',
-                          justifyContent: 'center',
                           alignItems: 'center',
+                          cursor: hasMultipleStops ? 'pointer' : 'default',
                         })}
+                        onClick={() => {
+                          if (hasMultipleStops) {
+                            setToggleDetailRoute((prev) => {
+                              const nextState = [...prev];
+                              nextState[routeDetailIdx] = !prev[routeDetailIdx];
+                              return nextState;
+                            });
+                          }
+                        }}
                       >
-                        <span
-                          style={{ borderColor: routeDetail.lineColor }}
+                        <p
+                          className={css({ color: '#4D525A', fontSize: '14px' })}
+                        >{`${routeDetail.times}분소요 · ${routeDetail.passStations.length + 1}개역 이동`}</p>
+                        {hasMultipleStops && (
+                          <img
+                            src='/icons/chevron.png'
+                            alt=''
+                            className={css({
+                              width: '18px',
+                              height: '18px',
+                              transform: toggleDetailRoute[routeDetailIdx] ? 'rotate(180deg)' : 'rotate(0deg)',
+                            })}
+                          />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  {/* details */}
+                  <div
+                    className={css({
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      overflow: !hasMultipleStops || toggleDetailRoute[routeDetailIdx] ? 'visible' : 'hidden',
+                      height: !hasMultipleStops || toggleDetailRoute[routeDetailIdx] ? 'auto' : '0px',
+                    })}
+                  >
+                    {routeDetail.passStations.map((stationName) => (
+                      <div key={stationName} className={css({ display: 'flex', gap: '12px' })}>
+                        <div
                           className={css({
-                            position: 'relative',
-                            border: '1px solid',
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: 'full',
-                            display: 'block',
+                            width: '24px',
+                            height: '24px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
                           })}
                         >
                           <span
-                            style={{ backgroundColor: routeDetail.lineColor }}
+                            style={{ borderColor: routeDetail.lineColor }}
                             className={css({
-                              position: 'absolute',
-                              height: '16px',
-                              width: '1px',
-                              top: 'calc(100% + 4px)',
-                              left: '50%',
+                              position: 'relative',
+                              border: '1px solid',
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: 'full',
+                              display: 'block',
                             })}
-                          />
-                        </span>
+                          >
+                            <span
+                              style={{ backgroundColor: routeDetail.lineColor }}
+                              className={css({
+                                position: 'absolute',
+                                height: '16px',
+                                width: '1px',
+                                top: 'calc(100% + 4px)',
+                                left: '50%',
+                              })}
+                            />
+                          </span>
+                        </div>
+                        <p className={css({ color: '#4D525A', fontSize: '14px' })}>{stationName}</p>
                       </div>
-                      <p className={css({ color: '#4D525A', fontSize: '14px' })}>{stationName}</p>
-                    </div>
-                  ))}
-                </div>
-              </Fragment>
-            ))}
+                    ))}
+                  </div>
+                </Fragment>
+              );
+            })}
             <p className={css({ paddingLeft: '36px', color: '#23272B', fontWeight: 'semibold' })}>
               {searchResult.route.stationCongestions.at(-1)!.stationName} 하차
             </p>

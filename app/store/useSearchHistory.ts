@@ -15,18 +15,26 @@ interface SearchHistoryStore {
 const STORAGE_KEY = 'searchHistory';
 const MAX_ITEM_COUNT = 5;
 
-function loadFromLocalStorage(): SearchHistoryItem[] {
+function initSearchHistory(): SearchHistoryItem[] {
   if (typeof window === 'undefined') return [];
 
   const storedRawData = window.localStorage.getItem(STORAGE_KEY);
   if (!storedRawData) return [];
 
   const storedHistories = JSON.parse(storedRawData);
-  if (!Array.isArray(storedHistories)) return [];
+
+  if (!Array.isArray(storedHistories)) {
+    window.localStorage.removeItem(STORAGE_KEY);
+    return [];
+  }
 
   const validHistories = storedHistories.filter(
     (history) => searchHistoryItemSchema.safeParse(history).success,
   ) as SearchHistoryItem[];
+
+  if (storedHistories.length !== validHistories.length) {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(validHistories));
+  }
 
   return validHistories;
 }
@@ -38,7 +46,7 @@ export const useSearchHistory = create<SearchHistoryStore>()(
     initialize: () => {
       set((prev) => ({
         ...prev,
-        searchHistories: loadFromLocalStorage(),
+        searchHistories: initSearchHistory(),
       }));
     },
 

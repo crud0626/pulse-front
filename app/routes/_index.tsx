@@ -85,10 +85,12 @@ const generateData = (routes: StationCongestion[]): SimpleRoute[] => {
 
   routes.forEach((r, idx) => {
     if (r.lineName !== lastLineName) {
+      const durationMinutes = getMinutesDifference(startTime!, routes[idx - 1].arrivalTime!);
+
       data.push({
         lineName: lastLineName,
         lineColor: lastLineColor,
-        time: getMinutesDifference(startTime!, routes[idx - 1].arrivalTime!),
+        time: durationMinutes > -1 ? durationMinutes : durationMinutes + 1440,
         stationName,
       });
 
@@ -101,10 +103,12 @@ const generateData = (routes: StationCongestion[]): SimpleRoute[] => {
     }
   });
 
+  const durationMinutes = getMinutesDifference(startTime!, routes.at(-1)!.arrivalTime!);
+
   data.push({
     lineName: lastLineName,
     lineColor: lastLineColor,
-    time: getMinutesDifference(startTime!, routes.at(-1)!.arrivalTime!),
+    time: durationMinutes > -1 ? durationMinutes : durationMinutes + 1440,
     stationName,
   });
 
@@ -349,8 +353,10 @@ export default function HomePage() {
                     type: 'confirm',
                     title: '최근 내역을 삭제할까요?',
                     description: '삭제하면 다시 복구할 수 없으니 신중히 결정해 주세요.',
-                  }).then(() => {
-                    clearHistories();
+                  }).then((isConfirmed) => {
+                    if (isConfirmed) {
+                      clearHistories();
+                    }
                   });
                 }}
                 className={css({
@@ -364,7 +370,8 @@ export default function HomePage() {
             <Swiper spaceBetween={16} slidesPerView={1.3} className={css({ width: '100%' })}>
               {searchHistories.map((history) => (
                 <SwiperSlide className={css({ backgroundColor: '#F5F7F9', borderRadius: '12px', padding: '12px' })}>
-                  <div
+                  <Link
+                    to={`/search/results?departureStationId=${history.startId}&arrivalStationId=${history.endId}&searchDate=${history.searchDate}&startTime=${history.startTime}&endTime=${history.endTime}`}
                     className={css({
                       display: 'flex',
                       alignItems: 'start',
@@ -447,7 +454,11 @@ export default function HomePage() {
                       </p>
                     </div>
                     <button
-                      onClick={() => {
+                      onClick={(event) => {
+                        // INFO :: Link 태그 이동 방지
+                        event.preventDefault();
+                        event.stopPropagation();
+
                         setIsOpenBookmarkNameSheet(true);
                         setWillAddBookmarkItem(history);
                       }}
@@ -457,7 +468,7 @@ export default function HomePage() {
                     >
                       <img src='/icons/empty-star.png' alt='' className={css({ width: '24px', height: '24px' })} />
                     </button>
-                  </div>
+                  </Link>
                 </SwiperSlide>
               ))}
             </Swiper>
