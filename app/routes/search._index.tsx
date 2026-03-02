@@ -398,6 +398,7 @@ export default function SearchPage() {
                           backgroundColor: selectedStation.end.lineColor,
                         }}
                         className={css({
+                          flexShrink: 0,
                           display: 'block',
                           width: '10px',
                           height: '10px',
