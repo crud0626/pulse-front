@@ -358,7 +358,7 @@ export default function SearchResultPage() {
           <div className={css({ display: 'flex', flexDirection: 'column', gap: '12px' })}>
             {/* 컴포넌트 분리 상세 Route 영역 */}
             {searchResult.routeDetails.map((routeDetail, routeDetailIdx) => {
-              const hasMultipleStops = routeDetail.passStations.length > 1;
+              const hasMultipleStops = routeDetail.passStations.length > 0;
 
               return (
                 <Fragment key={routeDetailIdx}>
