@@ -20,8 +20,8 @@ export const searchHistoryItemSchema = z.object({
 export type SearchHistoryItem = z.infer<typeof searchHistoryItemSchema>;
 
 export const searchConditionSchema = z.object({
-  departureStationId: z.number().int().positive(),
-  arrivalStationId: z.number().int().positive(),
+  departureStationId: z.string(),
+  arrivalStationId: z.string(),
   searchDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   startTime: timeSchema,
   endTime: timeSchema,
