@@ -33,8 +33,8 @@ interface Recommendation {
 }
 
 interface SearchRouteResponse {
-  departureStationId: number;
-  arrivalStationId: number;
+  departureStationId: string;
+  arrivalStationId: string;
   departureStationName: string;
   arrivalStationName: string;
   travelDate: string;
@@ -44,9 +44,8 @@ interface SearchRouteResponse {
 }
 
 function getMinutesDifference(time1: string, time2: string) {
-  // hh:mm:ss 형식을 Date 객체로 파싱
-  const date1 = parse(time1, 'HH:mm:ss', new Date());
-  const date2 = parse(time2, 'HH:mm:ss', new Date());
+  const date1 = parse(time1, 'HH:mm', new Date());
+  const date2 = parse(time2, 'HH:mm', new Date());
 
   // 분 단위 차이 계산
   return differenceInMinutes(date2, date1);
@@ -169,8 +168,8 @@ export default function SearchResultPage() {
 
   useEffect(() => {
     const searchCondition = {
-      departureStationId: Number(searchParams.get('departureStationId')),
-      arrivalStationId: Number(searchParams.get('arrivalStationId')),
+      departureStationId: searchParams.get('departureStationId') ?? '',
+      arrivalStationId: searchParams.get('arrivalStationId') ?? '',
       searchDate: searchParams.get('searchDate'),
       startTime: searchParams.get('startTime'),
       endTime: searchParams.get('endTime'),
@@ -190,11 +189,11 @@ export default function SearchResultPage() {
       const searchResultData = await getSearchResult();
       if (searchResultData) {
         addHistory({
-          startId: searchResultData.departureStationId.toString(),
+          startId: searchResultData.departureStationId,
           startName: searchResultData.departureStationName,
           startLine: searchResultData.routeDetails[0].lineName,
           startLineColor: searchResultData.routeDetails[0].lineColor,
-          endId: searchResultData.arrivalStationId.toString(),
+          endId: searchResultData.arrivalStationId,
           endName: searchResultData.arrivalStationName,
           endLine: searchResultData.routeDetails.at(-1)!.lineName,
           startTime: searchCondition.startTime!,
@@ -358,7 +357,7 @@ export default function SearchResultPage() {
           <div className={css({ display: 'flex', flexDirection: 'column', gap: '12px' })}>
             {/* 컴포넌트 분리 상세 Route 영역 */}
             {searchResult.routeDetails.map((routeDetail, routeDetailIdx) => {
-              const hasMultipleStops = routeDetail.passStations.length > 1;
+              const hasMultipleStops = routeDetail.passStations.length > 0;
 
               return (
                 <Fragment key={routeDetailIdx}>

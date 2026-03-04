@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { add, addMonths, format, isSameMonth, isToday, parse, startOfMonth } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { css } from 'styled-system/css';
@@ -66,16 +66,6 @@ const SecondSearchFormSection = ({
   const [isOpenMonthSelector, setIsOpenMonthSelector] = useState(false);
   const [isOpenTimeSelector, setIsOpenTimeSelector] = useState<null | 'min' | 'max'>(null);
   const [focusSection, setFocusSection] = useState<0 | 1>(0);
-
-  useEffect(() => {
-    try {
-      if (!departureTimeRange.min) return;
-      console.log(departureTimeRange.min);
-      console.log(format(parse(departureTimeRange.min, 'HH:mm', new Date()), 'a hh시 mm분'));
-    } catch (error) {
-      console.error(error);
-    }
-  }, [departureTimeRange.min]);
 
   return (
     <details

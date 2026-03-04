@@ -1,4 +1,3 @@
-import { format, parse } from 'date-fns';
 import { css } from 'styled-system/css';
 
 export type CongestionLevels = 'LOW' | 'MEDIUM' | 'HIGH';
@@ -67,17 +66,11 @@ const RecommendedTimetable = ({ timeTables }: RecommendedTimetableProps) => {
             })}
           >
             <p>
-              출발{' '}
-              <span className={css({ fontWeight: 'semibold' })}>
-                {format(parse(timeTable.departureTime, 'HH:mm:ss', new Date()), 'HH:mm')}
-              </span>
+              출발 <span className={css({ fontWeight: 'semibold' })}>{timeTable.departureTime}</span>
             </p>
             <p>-</p>
             <p>
-              도착{' '}
-              <span className={css({ fontWeight: 'semibold' })}>
-                {format(parse(timeTable.arrivalTime, 'HH:mm:ss', new Date()), 'HH:mm')}
-              </span>
+              도착 <span className={css({ fontWeight: 'semibold' })}>{timeTable.arrivalTime}</span>
             </p>
           </div>
         </div>

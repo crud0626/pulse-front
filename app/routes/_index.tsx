@@ -23,8 +23,8 @@ import type { SearchHistoryItem } from '~/schemas';
 
 function getMinutesDifference(time1: string, time2: string) {
   // hh:mm:ss 형식을 Date 객체로 파싱
-  const date1 = parse(time1, 'HH:mm:ss', new Date());
-  const date2 = parse(time2, 'HH:mm:ss', new Date());
+  const date1 = parse(time1, 'HH:mm', new Date());
+  const date2 = parse(time2, 'HH:mm', new Date());
 
   // 분 단위 차이 계산
   return differenceInMinutes(date2, date1);
@@ -33,8 +33,8 @@ function getMinutesDifference(time1: string, time2: string) {
 interface BookmarkItem {
   id: number;
   name: string;
-  departureStationId: number;
-  arrivalStationId: number;
+  departureStationId: string;
+  arrivalStationId: string;
   departureStationName: string;
   arrivalStationName: string;
   startTime: string;
@@ -574,8 +574,7 @@ export default function HomePage() {
                               whiteSpace: 'nowrap',
                             })}
                           >
-                            {format(parse(item.startTime, 'HH:mm:ss', new Date()), 'HH:mm')} ~{' '}
-                            {format(parse(item.endTime, 'HH:mm:ss', new Date()), 'HH:mm')} 중 출발
+                            {item.startTime} ~ {item.endTime} 중 출발
                           </p>
                         </div>
                         {isLoadingBookmarkRoute ? (

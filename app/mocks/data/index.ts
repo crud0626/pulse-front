@@ -23,8 +23,8 @@ interface RouteRecommendation {
 }
 
 export interface SearchRouteResult {
-  departureStationId: number;
-  arrivalStationId: number;
+  departureStationId: string;
+  arrivalStationId: string;
   departureStationName: string;
   arrivalStationName: string;
   travelDate: string;
@@ -37,8 +37,8 @@ export const MOCK_BOOKMARK_LIST = [
   {
     'id': 2,
     'name': 'my bookmark1',
-    'departureStationId': 517,
-    'arrivalStationId': 133,
+    'departureStationId': '517',
+    'arrivalStationId': '133',
     'departureStationName': '화곡',
     'arrivalStationName': '서울역',
     'departureLineName': '수도권 5호선',
@@ -54,8 +54,8 @@ export const MOCK_BOOKMARK_LIST = [
   {
     'id': 3,
     'name': 'my bookmark2',
-    'departureStationId': 4212,
-    'arrivalStationId': 222,
+    'departureStationId': '4212',
+    'arrivalStationId': '222',
     'departureStationName': '사당',
     'arrivalStationName': '강남',
     'departureLineName': '수도권 4호선',
@@ -73,8 +73,8 @@ export const MOCK_BOOKMARK_LIST = [
 export const MOCK_BOOKMARK = {
   'id': 2,
   'name': 'my bookmark1',
-  'departureStationId': 517,
-  'arrivalStationId': 133,
+  'departureStationId': '517',
+  'arrivalStationId': '133',
   'departureStationName': '화곡',
   'arrivalStationName': '서울역',
   'startTime': '00:09',
@@ -154,8 +154,8 @@ export const MOCK_SEARCH_STATION_RESULT = {
 };
 
 export const MOCK_SEARCH_ROUTE_RESULT: SearchRouteResult = {
-  'departureStationId': 517,
-  'arrivalStationId': 133,
+  'departureStationId': '517',
+  'arrivalStationId': '133',
   'departureStationName': '화곡',
   'arrivalStationName': '서울역',
   'travelDate': '2025-01-05',
