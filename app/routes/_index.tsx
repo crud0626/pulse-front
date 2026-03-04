@@ -574,8 +574,7 @@ export default function HomePage() {
                               whiteSpace: 'nowrap',
                             })}
                           >
-                            {format(parse(item.startTime, 'HH:mm', new Date()), 'HH:mm')} ~{' '}
-                            {format(parse(item.endTime, 'HH:mm', new Date()), 'HH:mm')} 중 출발
+                            {item.startTime} ~ {item.endTime} 중 출발
                           </p>
                         </div>
                         {isLoadingBookmarkRoute ? (

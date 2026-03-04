@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Reorder } from 'motion/react';
-import { format, parse } from 'date-fns';
 import { toast } from 'react-toastify/unstyled';
 
 import { css } from 'styled-system/css';
@@ -332,8 +331,7 @@ export default function BookmarksPage() {
                     </div>
                   </div>
                   <p className={css({ color: '#23272B', fontSize: '14px' })}>
-                    {format(parse(favorite.startTime, 'HH:mm', new Date()), 'HH:mm')} ~{' '}
-                    {format(parse(favorite.endTime, 'HH:mm', new Date()), 'HH:mm')} 중 출발
+                    {favorite.startTime} ~ {favorite.endTime} 중 출발
                   </p>
                 </div>
               </div>
